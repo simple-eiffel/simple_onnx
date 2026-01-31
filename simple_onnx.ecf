@@ -19,7 +19,6 @@
 		<root class="TEST_APP" feature="make"/>
 		<option warning="error"/>
 		<library name="eqa_testing" location="$ISE_LIBRARY/library/testing/testing.ecf"/>
-		<library name="simple_testing" location="$SIMPLE_EIFFEL/simple_testing/simple_testing.ecf"/>
 		<cluster name="testing" location="testing/" recursive="true"/>
 	</target>
 </system>

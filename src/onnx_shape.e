@@ -17,13 +17,15 @@ feature {NONE} -- Initialization
 			dimensions_not_empty: a_dimensions.count > 0
 			all_positive: across a_dimensions as ic all ic >= 0 end
 		do
-			create dimensions.make (1, a_dimensions.count)
-			across a_dimensions as ic loop
-				dimensions [ic.index] := ic.item
+			create dimensions.make_filled (0, 1, a_dimensions.count)
+			across 1 |..| a_dimensions.count as ic loop
+				dimensions [ic] := a_dimensions [a_dimensions.lower + ic - 1]
 			end
 		ensure
 			rank_set: rank = a_dimensions.count
-			dimensions_copied: across dimensions as ic all ic.item = a_dimensions [ic.index] end
+			dimensions_copied: across 1 |..| a_dimensions.count as ic all
+							   dimensions [ic] = a_dimensions [a_dimensions.lower + ic - 1]
+						   end
 		end
 
 feature -- Access

@@ -22,6 +22,9 @@ feature {NONE} -- Initialization
 			shape := a_shape
 			data_type := create {ONNX_DATA_TYPE}.make (1)  -- float32
 			create data.make_filled (0.0, 1, shape.element_count)
+			create int_data.make_filled (0, 1, 1)
+			create int64_data.make_filled (0, 1, 1)
+			create bool_data.make_filled (False, 1, 1)
 		ensure
 			shape_set: shape = a_shape
 			data_type_float32: data_type.type_id = 1
@@ -37,6 +40,9 @@ feature {NONE} -- Initialization
 			shape := a_shape
 			data_type := create {ONNX_DATA_TYPE}.make (6)  -- int32
 			create int_data.make_filled (0, 1, shape.element_count)
+			create data.make_filled (0.0, 1, 1)
+			create int64_data.make_filled (0, 1, 1)
+			create bool_data.make_filled (False, 1, 1)
 		ensure
 			shape_set: shape = a_shape
 			data_type_int32: data_type.type_id = 6
@@ -52,6 +58,9 @@ feature {NONE} -- Initialization
 			shape := a_shape
 			data_type := create {ONNX_DATA_TYPE}.make (7)  -- int64
 			create int64_data.make_filled (0, 1, shape.element_count)
+			create data.make_filled (0.0, 1, 1)
+			create int_data.make_filled (0, 1, 1)
+			create bool_data.make_filled (False, 1, 1)
 		ensure
 			shape_set: shape = a_shape
 			data_type_int64: data_type.type_id = 7
@@ -67,6 +76,9 @@ feature {NONE} -- Initialization
 			shape := a_shape
 			data_type := create {ONNX_DATA_TYPE}.make (9)  -- bool
 			create bool_data.make_filled (False, 1, shape.element_count)
+			create data.make_filled (0.0, 1, 1)
+			create int_data.make_filled (0, 1, 1)
+			create int64_data.make_filled (0, 1, 1)
 		ensure
 			shape_set: shape = a_shape
 			data_type_bool: data_type.type_id = 9
@@ -82,6 +94,9 @@ feature {NONE} -- Initialization
 			shape := a_shape
 			data_type := create {ONNX_DATA_TYPE}.make (10)  -- float16
 			create data.make_filled (0.0, 1, shape.element_count)
+			create int_data.make_filled (0, 1, 1)
+			create int64_data.make_filled (0, 1, 1)
+			create bool_data.make_filled (False, 1, 1)
 		ensure
 			shape_set: shape = a_shape
 			data_type_float16: data_type.type_id = 10
@@ -116,11 +131,11 @@ feature -- Data Manipulation
 		do
 			across 1 |..| a_data.count as ic
 			loop
-				data [ic] := a_data [ic.lower + ic - 1]
+				data [ic] := a_data [a_data.lower + ic - 1]
 			end
 		ensure
 			data_set: across 1 |..| element_count as ic all
-						 data [ic] = a_data [ic.lower + ic - 1]
+						 data [ic] = a_data [a_data.lower + ic - 1]
 					 end
 		end
 
@@ -133,11 +148,11 @@ feature -- Data Manipulation
 		do
 			across 1 |..| a_data.count as ic
 			loop
-				int_data [ic] := a_data [ic.lower + ic - 1]
+				int_data [ic] := a_data [a_data.lower + ic - 1]
 			end
 		ensure
 			data_set: across 1 |..| element_count as ic all
-						 int_data [ic] = a_data [ic.lower + ic - 1]
+						 int_data [ic] = a_data [a_data.lower + ic - 1]
 					 end
 		end
 
@@ -150,11 +165,11 @@ feature -- Data Manipulation
 		do
 			across 1 |..| a_data.count as ic
 			loop
-				int64_data [ic] := a_data [ic.lower + ic - 1]
+				int64_data [ic] := a_data [a_data.lower + ic - 1]
 			end
 		ensure
 			data_set: across 1 |..| element_count as ic all
-						 int64_data [ic] = a_data [ic.lower + ic - 1]
+						 int64_data [ic] = a_data [a_data.lower + ic - 1]
 					 end
 		end
 
@@ -167,11 +182,11 @@ feature -- Data Manipulation
 		do
 			across 1 |..| a_data.count as ic
 			loop
-				bool_data [ic] := a_data [ic.lower + ic - 1]
+				bool_data [ic] := a_data [a_data.lower + ic - 1]
 			end
 		ensure
 			data_set: across 1 |..| element_count as ic all
-						 bool_data [ic] = a_data [ic.lower + ic - 1]
+						 bool_data [ic] = a_data [a_data.lower + ic - 1]
 					 end
 		end
 
@@ -182,7 +197,7 @@ feature -- Data Retrieval
 		require
 			is_float32: data_type.type_id = 1
 		do
-			create Result.make (1, element_count)
+			create Result.make_filled (0.0, 1, element_count)
 			across 1 |..| element_count as ic
 			loop
 				Result [ic] := data [ic]
@@ -200,7 +215,7 @@ feature -- Data Retrieval
 		require
 			is_int32: data_type.type_id = 6
 		do
-			create Result.make (1, element_count)
+			create Result.make_filled (0, 1, element_count)
 			across 1 |..| element_count as ic
 			loop
 				Result [ic] := int_data [ic]
@@ -218,7 +233,7 @@ feature -- Data Retrieval
 		require
 			is_int64: data_type.type_id = 7
 		do
-			create Result.make (1, element_count)
+			create Result.make_filled (0, 1, element_count)
 			across 1 |..| element_count as ic
 			loop
 				Result [ic] := int64_data [ic]
@@ -236,7 +251,7 @@ feature -- Data Retrieval
 		require
 			is_bool: data_type.type_id = 9
 		do
-			create Result.make (1, element_count)
+			create Result.make_filled (False, 1, element_count)
 			across 1 |..| element_count as ic
 			loop
 				Result [ic] := bool_data [ic]
@@ -253,15 +268,19 @@ feature {NONE} -- Implementation
 
 	data: ARRAY [REAL_32]
 			-- Float32 data storage.
+			-- Initialized in make_float32, make_float16.
 
 	int_data: ARRAY [INTEGER]
 			-- Int32 data storage.
+			-- Initialized in make_int32.
 
 	int64_data: ARRAY [INTEGER_64]
 			-- Int64 data storage.
+			-- Initialized in make_int64.
 
 	bool_data: ARRAY [BOOLEAN]
 			-- Bool data storage.
+			-- Initialized in make_bool.
 
 invariant
 	shape_not_void: shape /= Void

@@ -76,8 +76,8 @@ feature -- Queries
 		do
 			if is_success then
 				Result := "Inference succeeded. Output shape: "
-				if output_tensor /= Void then
-					Result.append (output_tensor.shape.to_string)
+				if attached output_tensor as ot then
+					Result.append (ot.shape.to_string)
 				end
 			else
 				Result := "Inference failed: " + error_message

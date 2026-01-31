@@ -50,7 +50,8 @@ feature -- Modification
 		do
 			description := a_desc.twin
 		ensure
-			description_set: description /= Void and description.same_string (a_desc)
+			description_not_void: description /= Void
+			description_set: attached description as d implies d.same_string (a_desc)
 		end
 
 feature -- Queries

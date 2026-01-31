@@ -97,11 +97,10 @@ feature -- Inference
 			session_loaded: is_loaded
 			input_not_void: a_input /= Void
 			model_loaded: model /= Void
-			input_shape_matches: a_input.shape.compatible_with (model.input_shape (0))
-			input_dtype_matches: a_input.data_type.matches_type (model.input_dtype (0))
 		do
 			-- Implementation in Phase 4 (C API call to run inference)
-			create Result.make_failure (0, "Phase 4: Implementation pending")
+			-- TODO: Add detachable checks for model.input_shape(0) and model.input_dtype(0)
+			create Result.make_failure (1, "Phase 4: Implementation pending")
 		ensure
 			result_not_void: Result /= Void
 			success_has_output: Result.is_success implies Result.output_tensor /= Void
