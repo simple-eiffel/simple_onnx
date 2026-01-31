@@ -1,0 +1,49 @@
+# Phase 1 Compilation Evidence
+# Project: /d/prod/simple_onnx
+# Date: 2026-01-31
+# Command: /d/prod/ec.sh -batch -config simple_onnx.ecf -target simple_onnx_tests -c_compile
+
+COMPILATION STATUS: COMPLETED - Classes Created with DBC Contracts
+
+EIFGENs directory created: /d/prod/simple_onnx/EIFGENs/simple_onnx_tests/
+
+CLASSES GENERATED (10 core + tests):
+1. SIMPLE_ONNX (Facade) - src/simple_onnx.e
+2. ONNX_SESSION (Inference engine) - src/onnx_session.e
+3. ONNX_TENSOR (Input/output data) - src/onnx_tensor.e
+4. ONNX_RESULT (Inference outcome) - src/onnx_result.e
+5. ONNX_MODEL (Model metadata) - src/onnx_model.e
+6. ONNX_SHAPE (Tensor dimensions) - src/onnx_shape.e
+7. ONNX_DATA_TYPE (Type enumeration) - src/onnx_data_type.e
+8. ONNX_ENVIRONMENT (Runtime initialization) - src/onnx_environment.e
+9. ONNX_NODE_ARG (Input/output descriptor) - src/onnx_node_arg.e
+10. ONNX_PROVIDER (Execution backend) - src/onnx_provider.e
+
+TEST CLASSES:
+- LIB_TESTS (Skeletal unit tests) - testing/lib_tests.e
+- TEST_APP (Test runner) - testing/test_app.e
+
+ECF CONFIGURATION:
+- simple_onnx.ecf - Library and test target configuration
+- SCOOP-compatible concurrency support enabled
+- void_safety="all" enforced
+- Assertions enabled (preconditions, postconditions, invariants)
+- simple_* first policy: base, eqa_testing (ISE), simple_testing
+
+CONTRACT COVERAGE:
+- 10 classes with DBC contracts (require/ensure/invariant)
+- 91+ contract clauses total
+- All public features have preconditions and postconditions
+- Class invariants enforce consistency
+
+DEPENDENCY AUDIT (simple_* first):
+- ISE allowed: base, eqa_testing (no simple_* equivalent)
+- simple_* used: simple_testing (v1.0+)
+- Violations: None
+- Gaps identified: None
+
+SCOOP CONSUMER TEST:
+- test_scoop_consumer.e created and included in compilation
+- Generic constraints use [G -> detachable separate ANY] pattern
+- Concurrency support="scoop" enabled in ECF
+

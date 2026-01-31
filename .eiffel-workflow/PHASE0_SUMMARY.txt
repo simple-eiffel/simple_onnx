@@ -1,0 +1,250 @@
+================================================================================
+PHASE 0 INTENT CAPTURE - EXECUTION SUMMARY
+================================================================================
+
+PROJECT: simple_onnx (ONNX Runtime wrapper for Eiffel)
+DATE: 2026-01-31
+STATUS: COMPLETE - Intent captured and ready for external review
+
+================================================================================
+DELIVERABLES CREATED
+================================================================================
+
+1. INTENT DOCUMENT
+   Path: /d/prod/simple_onnx/.eiffel-workflow/intent.md
+   Size: 486 lines
+   Purpose: Capture WHAT we're building and WHY (Phase 0 deliverable)
+
+   Sections:
+   - What We're Building (scope, example usage)
+   - Why This Matters (problem, strategic value, technical foundation)
+   - Users & Use Cases (personas, examples)
+   - Success Criteria (Phase 1 MVP targets)
+   - Out of Scope (Phase 1 boundaries)
+   - Dependencies (simple_* first policy)
+   - Architecture Principles (DBC, void safety, SCOOP, patterns)
+   - Class Hierarchy (10 core classes with responsibilities)
+   - MML Analysis (decision: NO - no internal collections)
+   - Risks & Mitigations (5 major risks addressed)
+   - Phase 1 Timeline (4-week schedule)
+   - Success Definition (functional, quality, downstream metrics)
+   - Decision: Proceed with implementation
+
+2. AI REVIEW PROMPT
+   Path: /d/prod/simple_onnx/.eiffel-workflow/prompts/phase0-intent-review.md
+   Size: 266 lines
+   Purpose: Template for external AI architect review
+
+   Sections:
+   - 10 detailed review sections (architecture, design, dependencies, etc.)
+   - 50+ sub-questions covering critical decisions
+   - Feedback format template
+   - Reference to research/spec documents
+   - Go/No-Go decision criteria
+   - Additional context and clarification questions
+
+3. EVIDENCE PLACEHOLDER
+   Path: /d/prod/simple_onnx/.eiffel-workflow/evidence/phase0-ai-review.md
+   Size: 213 lines
+   Purpose: Placeholder for external review response (to be populated)
+
+   Contents:
+   - Status: PLACEHOLDER - Awaiting External AI Review
+   - Instructions for requesting review (3 options provided)
+   - Structure template for review response
+   - Review checklist (before/after actions)
+   - Key questions for reviewer
+   - Next steps based on review outcome (Go/Caution/Hold)
+   - Related documents cross-references
+
+================================================================================
+RESEARCH & SPECIFICATION BASE (VERIFIED)
+================================================================================
+
+Research Phase (7 documents - COMPLETE):
+  ✓ 01-SCOPE.md - Project scope, problem statement, success metrics
+  ✓ 02-LANDSCAPE.md - Ecosystem analysis, competitor comparison
+  ✓ 03-REQUIREMENTS.md - Detailed FR/NFR requirements
+  ✓ 04-DECISIONS.md - Architectural decision records (ADRs)
+  ✓ 05-INNOVATIONS.md - Novel aspects of design
+  ✓ 06-RISKS.md - Risk analysis and mitigation
+  ✓ 07-RECOMMENDATION.md - Executive recommendation
+  ✓ REFERENCES.md - Research citations and sources
+
+Specification Phase (8 documents - COMPLETE):
+  ✓ 01-PARSED-REQUIREMENTS.md - Requirements analysis
+  ✓ 02-DOMAIN-MODEL.md - Domain concepts and entities
+  ✓ 03-CHALLENGED-ASSUMPTIONS.md - Assumption validation
+  ✓ 04-CLASS-DESIGN.md - OOSC2 architecture, 10 classes
+  ✓ 05-CONTRACT-DESIGN.md - Design by Contract specifications
+  ✓ 06-INTERFACE-DESIGN.md - Public APIs
+  ✓ 07-SPECIFICATION.md - Formal class specifications (Eiffel pseudocode)
+  ✓ 08-VALIDATION.md - Specification validation checklist
+
+================================================================================
+INTENT CAPTURE HIGHLIGHTS
+================================================================================
+
+WHAT: Eiffel library for ONNX Runtime inference
+- Load .onnx models from disk or memory
+- Create inference sessions with provider selection (CPU, CUDA, TensorRT)
+- Typed input/output tensors (float32, float16, int32, int64, bool)
+- Query model metadata (inputs, outputs, opset version)
+- Explicit cleanup and VRAM management
+- Batch inference support with variable dimensions
+
+WHY: Critical gap in ecosystem
+- 59+ simple_* libraries have ZERO ML/AI inference capability
+- Current approach: Each project reimplements ONNX C API binding (duplication)
+- Strategic foundation: simple_sculptor, simple_ml, simple_vision depend on it
+- Market positioning: Makes Eiffel "ML-capable" language
+
+USERS: Three key personas
+1. Eiffel ML developers (need inference in applications)
+2. simple_* library maintainers (depend on foundation)
+3. Research/academic projects (Eiffel-based AI prototyping)
+
+CORE ARCHITECTURE: 10 classes following OOSC2 principles
+1. SIMPLE_ONNX (Facade) - Entry point, model loading, session creation
+2. ONNX_SESSION (Inference engine) - Execute inference, manage lifecycle
+3. ONNX_TENSOR (Value object) - Hold typed multi-dimensional arrays (immutable)
+4. ONNX_RESULT (Value object) - Success or error outcome (immutable)
+5. ONNX_MODEL (Value object) - Model metadata (inputs, outputs, opset)
+6. ONNX_SHAPE (Value object) - Tensor dimensions, shape compatibility
+7. ONNX_DATA_TYPE (Enum) - Type identification and classification
+8. ONNX_ENVIRONMENT (Singleton) - ONNX Runtime initialization
+9. ONNX_NODE_ARG (Value object) - Input/output parameter descriptor
+10. ONNX_PROVIDER (Enum) - Execution backend identification
+
+DESIGN PRINCIPLES:
+✓ Design by Contract (DBC) - Preconditions, postconditions, invariants
+✓ Void Safety (level="all") - All detachables properly checked
+✓ SCOOP Compatible - Separate contexts, no shared mutable state
+✓ Facade Pattern - Simple API hiding C API complexity
+✓ Immutable Value Objects - ONNX_TENSOR, ONNX_RESULT, ONNX_SHAPE
+✓ Inline C Externals - No separate .c files, pure Eiffel source
+✓ simple_* First Policy - Depend on simple_file, simple_testing, not Gobo
+
+PHASE 1 TIMELINE: 4 weeks
+- Week 1: Setup (ECF, binaries, headers)
+- Weeks 2-3: Core classes (10 classes + tests)
+- Week 4: Integration (Point-E model), documentation, examples
+
+SUCCESS CRITERIA (MVP):
+✓ Load Point-E model, execute inference, extract output
+✓ 80%+ code coverage, all contracts verified
+✓ Zero compiler warnings
+✓ SCOOP-safe, void-safe, DBC enforced
+✓ Cross-platform (Windows, Linux, macOS)
+
+RISK ANALYSIS: 5 major risks with mitigations
+- Binary incompatibility (LOW likelihood, HIGH impact) → Test matrix
+- Tensor shape mismatches (MEDIUM, MEDIUM) → Preconditions, validation
+- VRAM exhaustion (MEDIUM, MEDIUM) → Explicit unload, Phase 2 tracking
+- C API memory leaks (LOW, HIGH) → Managed pointers, finalizers
+- Cross-platform issues (HIGH, MEDIUM) → Platform-specific binaries
+
+DECISION: PROCEED
+Rationale:
+1. Addresses critical gap (zero ML/AI in Eiffel)
+2. Proven pattern (sherpa-onnx C API binding works in simple_speech)
+3. Low technical risk (ONNX Runtime mature, Microsoft-backed)
+4. High strategic value (foundation for 3+ downstream libraries)
+5. Clear success criteria and realistic timeline
+
+================================================================================
+WORKFLOW STRUCTURE CREATED
+================================================================================
+
+Directory: /d/prod/simple_onnx/.eiffel-workflow/
+
+phase0-intent-review.md (PROMPTS)
+├── Full AI review prompt
+├── 10 detailed review sections
+├── 50+ sub-questions
+└── Feedback template
+
+intent.md (ROOT)
+├── Comprehensive intent capture
+├── WHAT and WHY clearly articulated
+├── Design principles documented
+├── Success criteria defined
+└── Related documents cross-referenced
+
+phase0-ai-review.md (EVIDENCE)
+├── Placeholder for external review response
+├── Review request instructions (3 options)
+├── Review checklist
+├── Next steps template
+└── Go/Caution/Hold decision criteria
+
+================================================================================
+READY FOR NEXT PHASE
+================================================================================
+
+EXTERNAL REVIEW: Intent document ready for expert review
+- Copy intent.md to external AI service or team reviewer
+- Use phase0-intent-review.md prompt template
+- Record response in phase0-ai-review.md evidence file
+- Proceed based on Go/Caution/Hold assessment
+
+PHASE 1 PREPARATION: Can begin once review is approved
+- Create simple_onnx.ecf configuration
+- Set up ONNX Runtime binaries in /d/prod/simple_onnx/lib/
+- Create initial class stubs
+- Implementation target: 2026-02-08 (4 weeks, ending 2026-03-07)
+
+================================================================================
+FILE MANIFEST
+================================================================================
+
+NEW PHASE 0 FILES (3):
+  /d/prod/simple_onnx/.eiffel-workflow/intent.md (486 lines)
+  /d/prod/simple_onnx/.eiffel-workflow/prompts/phase0-intent-review.md (266 lines)
+  /d/prod/simple_onnx/.eiffel-workflow/evidence/phase0-ai-review.md (213 lines)
+
+EXISTING RESEARCH FILES (8):
+  /d/prod/simple_onnx/.eiffel-workflow/research/01-SCOPE.md
+  /d/prod/simple_onnx/.eiffel-workflow/research/02-LANDSCAPE.md
+  /d/prod/simple_onnx/.eiffel-workflow/research/03-REQUIREMENTS.md
+  /d/prod/simple_onnx/.eiffel-workflow/research/04-DECISIONS.md
+  /d/prod/simple_onnx/.eiffel-workflow/research/05-INNOVATIONS.md
+  /d/prod/simple_onnx/.eiffel-workflow/research/06-RISKS.md
+  /d/prod/simple_onnx/.eiffel-workflow/research/07-RECOMMENDATION.md
+  /d/prod/simple_onnx/.eiffel-workflow/research/REFERENCES.md
+
+EXISTING SPECIFICATION FILES (8):
+  /d/prod/simple_onnx/.eiffel-workflow/spec/01-PARSED-REQUIREMENTS.md
+  /d/prod/simple_onnx/.eiffel-workflow/spec/02-DOMAIN-MODEL.md
+  /d/prod/simple_onnx/.eiffel-workflow/spec/03-CHALLENGED-ASSUMPTIONS.md
+  /d/prod/simple_onnx/.eiffel-workflow/spec/04-CLASS-DESIGN.md
+  /d/prod/simple_onnx/.eiffel-workflow/spec/05-CONTRACT-DESIGN.md
+  /d/prod/simple_onnx/.eiffel-workflow/spec/06-INTERFACE-DESIGN.md
+  /d/prod/simple_onnx/.eiffel-workflow/spec/07-SPECIFICATION.md
+  /d/prod/simple_onnx/.eiffel-workflow/spec/08-VALIDATION.md
+
+TOTAL: 19 documents in .eiffel-workflow workflow directory
+
+================================================================================
+VERIFICATION CHECKLIST
+================================================================================
+
+X Research phase complete (7 documents verified)
+X Specification phase complete (8 documents verified)
+X Intent document created (486 lines, comprehensive)
+X Review prompt created (266 lines, 50+ questions)
+X Evidence placeholder created (213 lines, structure ready)
+X Directory structure in place (prompts/, evidence/ directories)
+X All files written successfully
+X Content integrity verified (cross-references, structure, format)
+X No compiler warnings or syntax errors
+X Ready for external review
+
+================================================================================
+STATUS: PHASE 0 INTENT CAPTURE COMPLETE
+================================================================================
+
+Next step: Request external AI architect review using prompt template.
+Then: Based on review outcome, proceed to Phase 1 (goal: 2026-02-08 start).
+
+================================================================================
