@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick API Reference - simple_onnx</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Quick API Reference</h1>
+        <p class="tagline">Essential patterns for using simple_onnx</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="user-guide.html">User Guide</a></li>
+            <li><a href="api-reference.html">Full API</a></li>
+            <li><a href="cookbook.html">Cookbook</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section>
+            <h2>Initialization</h2>
+            <pre><code>-- Create ONNX environment
+local
+    onnx: SIMPLE_ONNX
+do
+    create onnx.make
+    -- onnx.environment is ready
+end</code></pre>
+        </section>
+
+        <section>
+            <h2>Load a Model</h2>
+            <pre><code>local
+    onnx: SIMPLE_ONNX
+    model: ONNX_MODEL
+do
+    create onnx.make
+    model := onnx.load_model ("path/to/model.onnx")
+    -- model contains metadata about inputs/outputs
+end</code></pre>
+        </section>
+
+        <section>
+            <h2>Create Session</h2>
+            <pre><code>local
+    onnx: SIMPLE_ONNX
+    model: ONNX_MODEL
+    session: ONNX_SESSION
+do
+    create onnx.make
+    model := onnx.load_model ("model.onnx")
+    session := onnx.create_session (model)
+    -- session is ready for inference
+end</code></pre>
+        </section>
+
+        <section>
+            <h2>Create Float32 Tensor</h2>
+            <pre><code>local
+    onnx: SIMPLE_ONNX
+    shape: ONNX_SHAPE
+    tensor: ONNX_TENSOR
+    dims: ARRAY [INTEGER]
+do
+    create onnx.make
+    dims := << 1, 224, 224, 3 >>
+    shape := onnx.create_shape (dims)
+    tensor := onnx.create_tensor_float32 (shape)
+    -- tensor is ready for data
+end</code></pre>
+        </section>
+
+        <section>
+            <h2>Set Tensor Data</h2>
+            <pre><code>local
+    tensor: ONNX_TENSOR
+    data: ARRAY [REAL_32]
+    shape: ONNX_SHAPE
+do
+    create shape.make (<< 2, 3 >>)
+    create tensor.make_float32 (shape)
+
+    -- Create data array
+    create data.make (1, 6)
+    data [1] := 1.0; data [2] := 2.0; data [3] := 3.0
+    data [4] := 4.0; data [5] := 5.0; data [6] := 6.0
+
+    -- Set tensor data
+    tensor.set_data_from_array (data)
+end</code></pre>
+        </section>
+
+        <section>
+            <h2>Run Inference</h2>
+            <pre><code>local
+    session: ONNX_SESSION
+    input: ONNX_TENSOR
+    result: ONNX_RESULT
+do
+    -- ... create session and input tensor ...
+
+    result := session.execute (input)
+
+    if result.is_success then
+        -- Access output tensor
+        process (result.output_tensor)
+    else
+        -- Handle error
+        print ("Error: " + result.error_message)
+    end
+end</code></pre>
+        </section>
+
+        <section>
+            <h2>Get Tensor Data</h2>
+            <pre><code>local
+    tensor: ONNX_TENSOR
+    output: ARRAY [REAL_32]
+do
+    -- ... get tensor from inference result ...
+
+    if tensor.data_type.type_id = 1 then  -- float32
+        output := tensor.to_array
+        -- output contains all values
+    end
+end</code></pre>
+        </section>
+
+        <section>
+            <h2>Other Data Types</h2>
+            <pre><code>-- Int32 tensor
+tensor := onnx.create_tensor_int32 (shape)
+tensor.set_int_data_from_array (int_array)
+output_int := tensor.to_int_array
+
+-- Int64 tensor
+tensor := onnx.create_tensor_int64 (shape)
+tensor.set_int64_data_from_array (int64_array)
+output_int64 := tensor.to_int64_array
+
+-- Bool tensor
+tensor := onnx.create_tensor_bool (shape)
+tensor.set_bool_data_from_array (bool_array)
+output_bool := tensor.to_bool_array</code></pre>
+        </section>
+
+        <section>
+            <h2>Check Available Providers</h2>
+            <pre><code>local
+    onnx: SIMPLE_ONNX
+    providers: ARRAYED_LIST [STRING]
+do
+    create onnx.make
+    providers := onnx.available_providers
+    -- Returns list like ["CPUExecutionProvider", "CUDAExecutionProvider", ...]
+
+    if onnx.is_provider_available ("CUDAExecutionProvider") then
+        -- Can use GPU
+    end
+end</code></pre>
+        </section>
+
+        <section>
+            <h2>Set Execution Provider</h2>
+            <pre><code>local
+    session: ONNX_SESSION
+    model: ONNX_MODEL
+do
+    -- ... create model ...
+    create session.make (model)
+
+    -- Must set BEFORE loading
+    session.set_provider ("CUDAExecutionProvider")
+    session.set_optimization_level (2)  -- 0=disabled, 1=basic, 2=extended, 3=all
+
+    session.load
+end</code></pre>
+        </section>
+
+        <footer>
+            <p><a href="user-guide.html">→ See User Guide for detailed explanations</a></p>
+            <p><a href="api-reference.html">→ See Full API Reference for all classes and features</a></p>
+        </footer>
+    </main>
+</body>
+</html>

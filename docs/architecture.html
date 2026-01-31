@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture - simple_onnx</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Architecture & Design</h1>
+        <p class="tagline">Design decisions and system organization</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="quick.html">Quick API</a></li>
+            <li><a href="user-guide.html">User Guide</a></li>
+            <li><a href="api-reference.html">Full API</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="overview">
+            <h2>System Overview</h2>
+            <p>
+                simple_onnx wraps the ONNX Runtime C API using inline C externals,
+                providing a type-safe Eiffel facade over the low-level C interface.
+            </p>
+            <pre><code>
+┌─────────────────────────────────────────────────────────┐
+│         Eiffel Application Code                        │
+│  (Uses SIMPLE_ONNX, ONNX_TENSOR, ONNX_SESSION)         │
+└────────────────────┬────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────┐
+│  Facade Layer (SIMPLE_ONNX)                            │
+│  - Entry point for library                             │
+│  - Creates sessions, tensors, shapes                   │
+│  - Coordinates environment                             │
+└────────────────────┬────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────┐
+│  Core Classes                                          │
+│  - ONNX_SESSION: Manages inference graph               │
+│  - ONNX_TENSOR: Typed multi-dimensional arrays         │
+│  - ONNX_SHAPE: Dimension information                   │
+│  - ONNX_MODEL: Model metadata                          │
+│  - ONNX_RESULT: Success/failure encapsulation (XOR)    │
+└────────────────────┬────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────┐
+│  Inline C Externals                                    │
+│  - Direct calls to onnxruntime.dll                     │
+│  - No separate .c files                                │
+│  - C code embedded in Eiffel external declarations     │
+└────────────────────┬────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────┐
+│  ONNX Runtime C API                                    │
+│  - Model loading and session creation                  │
+│  - Tensor allocation and inference                     │
+│  - Provider management                                 │
+└─────────────────────────────────────────────────────────┘
+            </code></pre>
+        </section>
+
+        <section id="class-hierarchy">
+            <h2>Class Hierarchy</h2>
+
+            <h3>Organization</h3>
+            <ul>
+                <li><strong>SIMPLE_ONNX:</strong> Public facade - single entry point</li>
+                <li><strong>ONNX_SESSION:</strong> Public core - manages inference</li>
+                <li><strong>ONNX_TENSOR:</strong> Public core - input/output data</li>
+                <li><strong>ONNX_SHAPE:</strong> Public utility - dimension handling</li>
+                <li><strong>ONNX_RESULT:</strong> Public utility - result encapsulation</li>
+                <li><strong>ONNX_MODEL:</strong> Public metadata - model information</li>
+                <li><strong>ONNX_DATA_TYPE:</strong> Implementation - type enumeration</li>
+                <li><strong>ONNX_PROVIDER:</strong> Implementation - execution backend</li>
+                <li><strong>ONNX_ENVIRONMENT:</strong> Implementation - runtime init</li>
+                <li><strong>ONNX_NODE_ARG:</strong> Implementation - I/O descriptor</li>
+            </ul>
+
+            <h3>Inheritance Pattern</h3>
+            <p>
+                All classes inherit from ANY (no custom base class).
+                No multiple inheritance - composition preferred.
+            </p>
+            <pre><code>
+SIMPLE_ONNX
+  - environment: ONNX_ENVIRONMENT
+  - loads: ONNX_MODEL
+  - creates: ONNX_SESSION, ONNX_TENSOR, ONNX_SHAPE
+
+ONNX_SESSION
+  - model: ONNX_MODEL
+  - provider: ONNX_PROVIDER
+  - executes with: ONNX_TENSOR
+  - returns: ONNX_RESULT
+
+ONNX_TENSOR
+  - shape: ONNX_SHAPE
+  - data_type: ONNX_DATA_TYPE
+  - holds data arrays (float32, int32, int64, bool)
+            </code></pre>
+        </section>
+
+        <section id="design-decisions">
+            <h2>Design Decisions</h2>
+
+            <h3>1. Facade Pattern</h3>
+            <p>
+                <strong>Decision:</strong> SIMPLE_ONNX as single entry point<br>
+                <strong>Rationale:</strong> Hides 9 internal implementation classes,
+                presents simple API surface
+            </p>
+
+            <h3>2. Immutable Tensors</h3>
+            <p>
+                <strong>Decision:</strong> Tensors are immutable after creation<br>
+                <strong>Rationale:</strong> Once data is set via set_data_from_array(),
+                it cannot be modified. Prevents accidental state corruption.
+            </p>
+
+            <h3>3. XOR Result Pattern</h3>
+            <p>
+                <strong>Decision:</strong> ONNX_RESULT enforces success XOR failure<br>
+                <strong>Rationale:</strong> Invariant ensures only one of is_success
+                or error_code is true, preventing ambiguous states
+            </p>
+
+            <h3>4. Type-Safe Tensors</h3>
+            <p>
+                <strong>Decision:</strong> Separate creation for each data type<br>
+                <strong>Rationale:</strong> make_float32(), make_int32(), etc.
+                ensure type safety at compile time, not runtime
+            </p>
+
+            <h3>5. Inline C Externals</h3>
+            <p>
+                <strong>Decision:</strong> C code embedded in .e files, no separate .c files<br>
+                <strong>Rationale:</strong> Simplifies build process, all code visible in Eiffel,
+                follows simple_* ecosystem pattern
+            </p>
+
+            <h3>6. Design by Contract</h3>
+            <p>
+                <strong>Decision:</strong> 91+ contract clauses throughout<br>
+                <strong>Rationale:</strong> Pre/post/invariant catch errors at compile time,
+                enable static verification, document assumptions
+            </p>
+
+            <h3>7. SCOOP Compatibility</h3>
+            <p>
+                <strong>Decision:</strong> All classes SCOOP-safe<br>
+                <strong>Rationale:</strong> Enables use in concurrent/parallel applications
+                without special locking
+            </p>
+
+            <h3>8. Void Safety</h3>
+            <p>
+                <strong>Decision:</strong> void_safety="all" enforced<br>
+                <strong>Rationale:</strong> Compiler checks all detachable references,
+                eliminates null pointer exceptions
+            </p>
+        </section>
+
+        <section id="data-flow">
+            <h2>Data Flow</h2>
+
+            <h3>Typical Inference Pipeline</h3>
+            <pre><code>
+1. Application creates SIMPLE_ONNX
+   └─> Initializes ONNX_ENVIRONMENT
+
+2. Application loads model
+   └─> SIMPLE_ONNX.load_model("model.onnx")
+   └─> Returns ONNX_MODEL with metadata
+
+3. Application creates session
+   └─> SIMPLE_ONNX.create_session(model)
+   └─> Returns ONNX_SESSION (not loaded yet)
+   └─> Application configures provider + optimization
+   └─> Application calls session.load()
+
+4. Application creates tensor
+   └─> SIMPLE_ONNX.create_tensor_float32(shape)
+   └─> Returns ONNX_TENSOR (empty)
+   └─> Application calls tensor.set_data_from_array(data)
+
+5. Application runs inference
+   └─> session.execute(input_tensor)
+   └─> C code marshals data to ONNX Runtime
+   └─> ONNX Runtime performs graph execution
+   └─> C code marshals output back to Eiffel
+   └─> Returns ONNX_RESULT
+
+6. Application processes result
+   └─> if result.is_success then
+   └─> Accesses result.output_tensor
+   └─> Calls tensor.to_array() to get raw data
+            </code></pre>
+        </section>
+
+        <section id="memory-management">
+            <h2>Memory Management</h2>
+
+            <p>
+                Eiffel garbage collection handles all Eiffel objects (ONNX_TENSOR, ONNX_SESSION, etc.).
+            </p>
+
+            <p>
+                C library (ONNX Runtime) manages its own memory via inline C handles.
+                When ONNX_SESSION is garbage collected, session.unload() should be called
+                to release C-level resources.
+            </p>
+
+            <pre><code>
+Local variables (stack-allocated):
+- SIMPLE_ONNX instance → GC when out of scope
+- ONNX_TENSOR instances → GC when out of scope
+- ONNX_SESSION instances → GC when out of scope (call unload() first)
+
+C Runtime Objects (heap-allocated):
+- ONNX Runtime environment → Created once, kept alive
+- Session handles → Freed when session.unload() called
+- Tensor data → Freed when C structures destroyed
+            </code></pre>
+        </section>
+
+        <section id="extension-points">
+            <h2>Extension Points for Future</h2>
+
+            <h3>1. Additional Data Types</h3>
+            <p>
+                Add support for more ONNX types (UINT8, INT16, FLOAT64, etc.)
+                by extending ONNX_DATA_TYPE and ONNX_TENSOR
+            </p>
+
+            <h3>2. Batch Processing Utilities</h3>
+            <p>
+                Create helper classes for common patterns:
+                - Batch input/output handling
+                - Automatic shape inference
+                - Result post-processing
+            </p>
+
+            <h3>3. Model Serialization</h3>
+            <p>
+                Save/load session configuration to avoid reconfiguring for each run
+            </p>
+
+            <h3>4. Performance Profiling</h3>
+            <p>
+                Built-in profiling hooks to measure inference time, memory usage
+            </p>
+        </section>
+
+        <section id="performance">
+            <h2>Performance Characteristics</h2>
+
+            <h3>Creation Overhead</h3>
+            <pre><code>
+SIMPLE_ONNX.make()              ~ 1-10 ms (ONNX Runtime init)
+load_model()                    ~ 5-100 ms (file read + parsing)
+create_session()                ~ 10-500 ms (graph optimization)
+create_tensor()                 ~ < 1 ms (Eiffel object allocation)</code></pre>
+
+            <h3>Inference</h3>
+            <pre><code>
+execute(tensor)                 ~ Model dependent (from 1ms to 1000ms+)
+Data marshaling (Eiffel↔C)      ~ < 1 ms for typical tensors
+Result processing               ~ < 1 ms</code></pre>
+
+            <h3>Optimization Tips</h3>
+            <ul>
+                <li>Create session once, reuse for batch</li>
+                <li>Use GPU provider (CUDAExecutionProvider) for large models</li>
+                <li>Set optimization_level = 2 or 3</li>
+                <li>Batch inputs when possible</li>
+                <li>Profile your specific use case</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p><a href="user-guide.html">→ See User Guide for usage patterns</a></p>
+            <p><a href="cookbook.html">→ See Cookbook for real-world examples</a></p>
+        </footer>
+    </main>
+</body>
+</html>

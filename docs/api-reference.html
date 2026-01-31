@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Reference - simple_onnx</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>API Reference</h1>
+        <p class="tagline">Complete class and feature documentation</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="quick.html">Quick API</a></li>
+            <li><a href="user-guide.html">User Guide</a></li>
+            <li><a href="architecture.html">Architecture</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section>
+            <h2>SIMPLE_ONNX (Facade)</h2>
+            <p>Main entry point for ONNX Runtime functionality.</p>
+
+            <h3>Creation</h3>
+            <pre><code>make
+  -- Initialize ONNX Runtime environment
+  ensure: environment_created</code></pre>
+
+            <h3>Model Loading</h3>
+            <pre><code>load_model (a_path: STRING): detachable ONNX_MODEL
+  -- Load model from .onnx file
+  require: path_not_void, path_not_empty
+  ensure: result_valid (implies input/output count > 0)</code></pre>
+
+            <h3>Session Management</h3>
+            <pre><code>create_session (a_model: ONNX_MODEL): detachable ONNX_SESSION
+  -- Create inference session for model
+  require: model_not_void, model_loaded
+  ensure: result_valid (implies is_loaded)</code></pre>
+
+            <h3>Tensor Creation</h3>
+            <pre><code>create_tensor_float32 (a_shape: ONNX_SHAPE): ONNX_TENSOR
+create_tensor_int32 (a_shape: ONNX_SHAPE): ONNX_TENSOR
+create_tensor_int64 (a_shape: ONNX_SHAPE): ONNX_TENSOR
+  -- Create typed tensor with shape
+  require: shape_not_void
+  ensure: result_not_void, shape_correct, type_correct</code></pre>
+
+            <h3>Shape Creation</h3>
+            <pre><code>create_shape (a_dimensions: ARRAY [INTEGER]): ONNX_SHAPE
+  -- Create shape from dimension array
+  require: dims_not_void, dims_not_empty, all_positive
+  ensure: rank_correct</code></pre>
+
+            <h3>Provider Information</h3>
+            <pre><code>available_providers: ARRAYED_LIST [STRING]
+  -- List of available execution providers
+  ensure: result_not_void, cpu_available
+
+is_provider_available (a_name: STRING): BOOLEAN
+  -- Check if provider is available
+  require: name_not_void, name_not_empty
+  ensure: definition (matches environment.is_provider_available)</code></pre>
+
+            <h3>Version Info</h3>
+            <pre><code>version_info: STRING
+  -- ONNX Runtime version information
+  ensure: result_not_empty</code></pre>
+        </section>
+
+        <section>
+            <h2>ONNX_TENSOR (Typed Array)</h2>
+            <p>Immutable multi-dimensional typed array for model input/output.</p>
+
+            <h3>Creation (via SIMPLE_ONNX or direct)</h3>
+            <pre><code>make_float32 (a_shape: ONNX_SHAPE)
+make_int32 (a_shape: ONNX_SHAPE)
+make_int64 (a_shape: ONNX_SHAPE)
+make_bool (a_shape: ONNX_SHAPE)
+make_float16 (a_shape: ONNX_SHAPE)
+  -- Create typed tensor
+  require: shape_not_void
+  ensure: shape_set, type_correct, data_allocated</code></pre>
+
+            <h3>Access</h3>
+            <pre><code>shape: ONNX_SHAPE
+  -- Tensor dimensions
+
+data_type: ONNX_DATA_TYPE
+  -- Tensor element type
+
+element_count: INTEGER
+  -- Total number of elements
+  ensure: positive (> 0)</code></pre>
+
+            <h3>Data Manipulation</h3>
+            <pre><code>set_data_from_array (a_data: ARRAY [REAL_32])
+  -- Set float32 tensor data
+  require: is_float32, array_not_void, correct_size
+  ensure: data_set
+
+set_int_data_from_array (a_data: ARRAY [INTEGER])
+set_int64_data_from_array (a_data: ARRAY [INTEGER_64])
+set_bool_data_from_array (a_data: ARRAY [BOOLEAN])
+  -- Set typed tensor data
+  require: correct_type, array_not_void, correct_size
+  ensure: data_set</code></pre>
+
+            <h3>Data Retrieval</h3>
+            <pre><code>to_array: ARRAY [REAL_32]
+to_int_array: ARRAY [INTEGER]
+to_int64_array: ARRAY [INTEGER_64]
+to_bool_array: ARRAY [BOOLEAN]
+  -- Convert tensor to array
+  require: correct_type
+  ensure: result_not_void, result_size (= element_count), data_matches</code></pre>
+
+            <h3>Invariants</h3>
+            <pre><code>shape_not_void
+data_type_not_void
+element_count_positive (> 0)</code></pre>
+        </section>
+
+        <section>
+            <h2>ONNX_SESSION (Executor)</h2>
+            <p>Manages inference graph execution and provider selection.</p>
+
+            <h3>Creation</h3>
+            <pre><code>make (a_model: ONNX_MODEL)
+  -- Create session for model
+  require: model_not_void
+  ensure: model_set, default_provider (CPU), default_optimization (2)</code></pre>
+
+            <h3>Access</h3>
+            <pre><code>model: ONNX_MODEL
+provider: ONNX_PROVIDER
+optimization_level: INTEGER (0-3)</code></pre>
+
+            <h3>Configuration</h3>
+            <pre><code>set_provider (a_provider: STRING)
+  -- Set execution provider (CPU, CUDA, etc.)
+  require: provider_not_void, valid_provider, not_loaded
+  ensure: provider_set
+
+set_optimization_level (a_level: INTEGER)
+  -- Set graph optimization (0=none, 3=all)
+  require: valid_level (0-3), not_loaded
+  ensure: level_set</code></pre>
+
+            <h3>Lifecycle</h3>
+            <pre><code>load
+  -- Load model into memory
+  require: not_already_loaded
+  ensure: loaded
+
+unload
+  -- Unload and free resources
+  require: is_loaded
+  ensure: not_loaded</code></pre>
+
+            <h3>Inference</h3>
+            <pre><code>execute (a_input: ONNX_TENSOR): ONNX_RESULT
+  -- Run inference with input tensor
+  require: session_loaded, input_not_void, input_shape_matches, input_dtype_matches
+  ensure: result_not_void, (if success then output_tensor /= Void)</code></pre>
+
+            <h3>Metadata</h3>
+            <pre><code>model_metadata: ONNX_MODEL
+  -- Get current model metadata
+  ensure: result_not_void, result_same</code></pre>
+        </section>
+
+        <section>
+            <h2>ONNX_SHAPE (Dimensions)</h2>
+            <p>Represents tensor shape as array of dimensions.</p>
+
+            <h3>Creation</h3>
+            <pre><code>make (a_dimensions: ARRAY [INTEGER])
+  -- Create shape from dimension array
+  require: dims_not_void, dims_not_empty, all_positive
+  ensure: rank_set, dimensions_copied</code></pre>
+
+            <h3>Access</h3>
+            <pre><code>dimensions: ARRAY [INTEGER]
+  -- Dimension values as array
+
+rank: INTEGER
+  -- Number of dimensions
+  ensure: non_negative
+
+element_count: INTEGER
+  -- Product of all dimensions
+  ensure: positive (> 0)
+
+get_dimension (index: INTEGER): INTEGER
+  -- Get dimension at 1-based index
+  require: valid_index (1 <= index <= rank)
+  ensure: result_non_negative</code></pre>
+
+            <h3>Queries</h3>
+            <pre><code>matches (other: ONNX_SHAPE): BOOLEAN
+  -- Does this shape exactly match other?
+  require: other_not_void
+  ensure: definition (rank == other.rank and all dims match)
+
+compatible_with (other: ONNX_SHAPE): BOOLEAN
+  -- Can this be used for operations expecting other?
+  require: other_not_void
+  ensure: definition (matches(other))</code></pre>
+
+            <h3>String Representation</h3>
+            <pre><code>to_string: STRING
+  -- Shape as human-readable string (e.g., "1, 77, 768")
+  ensure: result_not_void</code></pre>
+        </section>
+
+        <section>
+            <h2>ONNX_RESULT (XOR Pattern)</h2>
+            <p>Encapsulates either success or failure (never both).</p>
+
+            <h3>Creation</h3>
+            <pre><code>make_success (a_tensor: ONNX_TENSOR)
+  -- Create successful result with output
+  require: tensor_not_void
+  ensure: is_success, output_set, no_error
+
+make_failure (a_code: INTEGER; a_message: STRING)
+  -- Create failure result with error details
+  require: code_nonzero, message_not_void
+  ensure: is_failure, error_code_set, error_message_set, no_output</code></pre>
+
+            <h3>Access</h3>
+            <pre><code>is_success: BOOLEAN
+output_tensor: detachable ONNX_TENSOR (only if is_success)
+error_code: INTEGER (0 = success, >0 = failure)
+error_message: STRING</code></pre>
+
+            <h3>Queries</h3>
+            <pre><code>status: STRING
+  -- Human-readable status (e.g., "Success" or "Failure (code: 1)")
+  ensure: result_not_empty
+
+summary: STRING
+  -- Concise summary with output shape or error message
+  ensure: result_not_empty</code></pre>
+
+            <h3>Invariants</h3>
+            <pre><code>success_xor_error: is_success XOR (error_code /= 0)
+success_has_output: is_success implies output_tensor /= Void
+failure_has_code: NOT is_success implies error_code /= 0
+error_message_not_void</code></pre>
+        </section>
+
+        <section>
+            <h2>ONNX_DATA_TYPE (Type Enumeration)</h2>
+            <p>Represents ONNX tensor element type.</p>
+
+            <h3>Type IDs</h3>
+            <pre><code>1  -- FLOAT32
+6  -- INT32
+7  -- INT64
+9  -- BOOL
+10 -- FLOAT16</code></pre>
+
+            <h3>Creation</h3>
+            <pre><code>make (a_type_id: INTEGER)
+  -- Create data type from ID
+  require: valid_type_id
+  ensure: type_id_set</code></pre>
+
+            <h3>Access</h3>
+            <pre><code>type_id: INTEGER
+  -- Type ID (1, 6, 7, 9, or 10)</code></pre>
+
+            <h3>Queries</h3>
+            <pre><code>matches_type (other: ONNX_DATA_TYPE): BOOLEAN
+  -- Do types match?
+  require: other_not_void
+  ensure: definition (type_id = other.type_id)</code></pre>
+        </section>
+
+        <section>
+            <h2>ONNX_MODEL (Metadata)</h2>
+            <p>Model information without loading inference graph.</p>
+
+            <h3>Creation</h3>
+            <pre><code>make (a_path: STRING)
+  -- Create model metadata
+  require: path_not_void, path_not_empty
+  ensure: path_set</code></pre>
+
+            <h3>Access</h3>
+            <pre><code>model_path: STRING
+input_count: INTEGER
+output_count: INTEGER
+opset_version: INTEGER</code></pre>
+
+            <h3>Input/Output Metadata</h3>
+            <pre><code>input_name (index: INTEGER): detachable STRING
+input_shape (index: INTEGER): detachable ONNX_SHAPE
+input_dtype (index: INTEGER): detachable ONNX_DATA_TYPE
+output_name (index: INTEGER): detachable STRING
+output_shape (index: INTEGER): detachable ONNX_SHAPE
+output_dtype (index: INTEGER): detachable ONNX_DATA_TYPE
+  -- Get model input/output metadata
+  require: valid_index (0 <= index < count)
+  ensure: result_not_empty (if STRING)</code></pre>
+        </section>
+
+        <footer>
+            <p><a href="user-guide.html">→ See User Guide for usage patterns</a></p>
+            <p><a href="quick.html">→ See Quick API for common examples</a></p>
+        </footer>
+    </main>
+</body>
+</html>

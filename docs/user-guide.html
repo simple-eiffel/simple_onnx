@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Guide - simple_onnx</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>simple_onnx User Guide</h1>
+        <p class="tagline">Comprehensive guide to running ONNX models in Eiffel</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="quick.html">Quick API</a></li>
+            <li><a href="api-reference.html">Full API</a></li>
+            <li><a href="architecture.html">Architecture</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="introduction">
+            <h2>Introduction</h2>
+            <p>
+                <strong>simple_onnx</strong> enables you to run machine learning models (trained in PyTorch, TensorFlow, or other frameworks)
+                directly in Eiffel applications without requiring Python or external runtime overhead.
+            </p>
+            <p>
+                It provides a type-safe, contract-verified wrapper around the ONNX Runtime C API, handling:
+            </p>
+            <ul>
+                <li>Model loading and metadata inspection</li>
+                <li>Tensor creation with multiple data types</li>
+                <li>Execution provider selection (CPU, GPU, accelerators)</li>
+                <li>Graph optimization and inference</li>
+                <li>Result validation with XOR pattern (success OR failure, never both)</li>
+            </ul>
+        </section>
+
+        <section id="installation">
+            <h2>Installation</h2>
+            <h3>1. Add to ECF</h3>
+            <pre><code>&lt;library name="simple_onnx" location="$SIMPLE_EIFFEL/simple_onnx/simple_onnx.ecf"/&gt;</code></pre>
+
+            <h3>2. Ensure ONNX Runtime is Installed</h3>
+            <p>
+                On Windows: Download ONNX Runtime from <code>https://github.com/microsoft/onnxruntime</code><br>
+                Place <code>onnxruntime.dll</code> in your PATH or application directory.
+            </p>
+        </section>
+
+        <section id="core-concepts">
+            <h2>Core Concepts</h2>
+
+            <h3>SIMPLE_ONNX (Facade)</h3>
+            <p>
+                The main entry point. Create one per application:
+            </p>
+            <pre><code>create onnx.make  -- Initializes ONNX Runtime environment</code></pre>
+
+            <h3>ONNX_MODEL (Metadata)</h3>
+            <p>
+                Holds information about a .onnx file without loading it into memory:
+            </p>
+            <pre><code>model := onnx.load_model ("model.onnx")
+print (model.input_count)   -- Number of inputs
+print (model.output_count)  -- Number of outputs
+print (model.opset_version) -- ONNX opset version used</code></pre>
+
+            <h3>ONNX_SESSION (Executor)</h3>
+            <p>
+                Manages the inference graph and execution provider:
+            </p>
+            <pre><code>session := onnx.create_session (model)
+session.set_provider ("CUDAExecutionProvider")  -- Use GPU if available
+session.set_optimization_level (2)              -- Graph optimization
+session.load                                    -- Prepare for inference</code></pre>
+
+            <h3>ONNX_TENSOR (Typed Array)</h3>
+            <p>
+                Immutable typed multi-dimensional array for input/output:
+            </p>
+            <pre><code>-- Create float32 tensor with shape [batch=1, height=224, width=224, channels=3]
+shape := onnx.create_shape (<< 1, 224, 224, 3 >>)
+tensor := onnx.create_tensor_float32 (shape)
+tensor.set_data_from_array (my_array)
+
+-- Query shape and type
+print (tensor.shape.rank)        -- Number of dimensions
+print (tensor.element_count)     -- Total elements
+print (tensor.data_type.type_id) -- 1=float32, 6=int32, etc.</code></pre>
+
+            <h3>ONNX_RESULT (XOR Pattern)</h3>
+            <p>
+                Encapsulates either success or failure (never both):
+            </p>
+            <pre><code>result := session.execute (input_tensor)
+
+if result.is_success then
+    -- result.output_tensor is NOT Void
+    process (result.output_tensor)
+else
+    -- result.error_code /= 0
+    print ("Error: " + result.error_message)
+end</code></pre>
+
+            <h3>ONNX_SHAPE (Dimensions)</h3>
+            <p>
+                Represents tensor shape as array of dimensions:
+            </p>
+            <pre><code>shape := onnx.create_shape (<< 32, 64, 128 >>)
+print (shape.rank)              -- 3 dimensions
+print (shape.element_count)     -- 32 * 64 * 128 = 262144
+print (shape.get_dimension (1)) -- First dimension = 32</code></pre>
+
+            <h3>ONNX_DATA_TYPE (Type ID)</h3>
+            <p>
+                Enumeration of supported types:
+            </p>
+            <pre><code>type_id = 1   -- FLOAT32
+type_id = 6   -- INT32
+type_id = 7   -- INT64
+type_id = 9   -- BOOL
+type_id = 10  -- FLOAT16</code></pre>
+        </section>
+
+        <section id="workflow">
+            <h2>Typical Workflow</h2>
+            <pre><code>-- 1. Initialize environment
+local
+    onnx: SIMPLE_ONNX
+    model: ONNX_MODEL
+    session: ONNX_SESSION
+    input_shape: ONNX_SHAPE
+    input_tensor: ONNX_TENSOR
+    result: ONNX_RESULT
+    output: ARRAY [REAL_32]
+do
+    -- Step 1: Create ONNX environment
+    create onnx.make
+
+    -- Step 2: Load model metadata
+    model := onnx.load_model ("resnet50.onnx")
+
+    -- Step 3: Create inference session
+    session := onnx.create_session (model)
+    session.set_optimization_level (2)
+    session.load
+
+    -- Step 4: Prepare input tensor
+    input_shape := onnx.create_shape (<< 1, 3, 224, 224 >>)
+    input_tensor := onnx.create_tensor_float32 (input_shape)
+
+    -- Step 5: Populate with data (e.g., from image)
+    input_tensor.set_data_from_array (my_image_data)
+
+    -- Step 6: Run inference
+    result := session.execute (input_tensor)
+
+    -- Step 7: Process result
+    if result.is_success then
+        output := result.output_tensor.to_array
+        process_predictions (output)
+    else
+        handle_error (result.error_message)
+    end
+
+    -- Step 8: Cleanup (C library handles this)
+    session.unload
+end</code></pre>
+        </section>
+
+        <section id="error-handling">
+            <h2>Error Handling</h2>
+            <p>
+                All operations return contracts or explicit results. No exceptions thrown.
+            </p>
+            <pre><code>result := session.execute (input)
+-- result.is_success: BOOLEAN
+-- result.output_tensor: detachable ONNX_TENSOR (only if is_success)
+-- result.error_code: INTEGER (0 = success)
+-- result.error_message: STRING (human-readable message)</code></pre>
+        </section>
+
+        <section id="performance">
+            <h2>Performance Optimization</h2>
+
+            <h3>1. Execution Providers</h3>
+            <p>
+                Prefer specialized hardware when available:
+            </p>
+            <pre><code>-- Check available providers
+providers := onnx.available_providers
+
+-- Use GPU if available
+if onnx.is_provider_available ("CUDAExecutionProvider") then
+    session.set_provider ("CUDAExecutionProvider")
+end</code></pre>
+
+            <h3>2. Graph Optimization</h3>
+            <pre><code>-- Level 0: No optimization (slow, but simplest)
+-- Level 1: Basic optimization
+-- Level 2: Extended optimization (recommended)
+-- Level 3: All optimizations
+session.set_optimization_level (2)  -- Good balance</code></pre>
+
+            <h3>3. Reuse Sessions</h3>
+            <p>
+                Create session once, reuse for multiple inferences:
+            </p>
+            <pre><code>-- DON'T: Create new session each time
+-- DO: Create once
+session := onnx.create_session (model)
+session.load
+
+-- Reuse many times
+across images as img loop
+    result := session.execute (img)
+    process (result)
+end
+
+session.unload</code></pre>
+        </section>
+
+        <section id="best-practices">
+            <h2>Best Practices</h2>
+            <ul>
+                <li><strong>Validate before executing:</strong> Check tensor shapes match model expectations</li>
+                <li><strong>Use explicit types:</strong> Be clear about float32 vs int32 vs other types</li>
+                <li><strong>Handle failures:</strong> Always check result.is_success</li>
+                <li><strong>Optimize graphs:</strong> Set optimization_level = 2 or higher</li>
+                <li><strong>Load once:</strong> Create session once per model, reuse for batch</li>
+                <li><strong>Profile your usage:</strong> Measure where time is spent (loading, inference, post-processing)</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p><a href="api-reference.html">→ See Full API Reference for class documentation</a></p>
+            <p><a href="cookbook.html">→ See Cookbook for real-world examples</a></p>
+        </footer>
+    </main>
+</body>
+</html>

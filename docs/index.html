@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>simple_onnx - ONNX Runtime Wrapper for Eiffel Inference</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="images/logo.png" alt="simple_* logo" class="logo">
+        </div>
+        <h1>simple_onnx</h1>
+        <p class="tagline">ONNX Runtime wrapper for Eiffel inference without Python dependency</p>
+        <div class="badges">
+            <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License">
+            <img src="https://img.shields.io/badge/Eiffel-25.02-purple.svg" alt="Eiffel 25.02">
+            <img src="https://img.shields.io/badge/DBC-Contracts-green.svg" alt="Design by Contract">
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="quick.html">QUICK API</a></li>
+            <li><a href="user-guide.html">User Guide</a></li>
+            <li><a href="api-reference.html">API Reference</a></li>
+            <li><a href="architecture.html">Architecture</a></li>
+            <li><a href="cookbook.html">Cookbook</a></li>
+            <li><a href="https://github.com/simple-eiffel/simple_onnx">GitHub</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="overview">
+            <h2>Overview</h2>
+            <p>
+                <strong>simple_onnx</strong> is a production-ready wrapper for the ONNX Runtime C API
+                enabling high-performance machine learning inference in Eiffel applications.
+                It provides type-safe tensor manipulation, multi-format I/O, and Design by Contract
+                verification without requiring Python or external runtime dependencies.
+            </p>
+            <p>
+                Part of the <a href="https://github.com/simple-eiffel">Simple Eiffel</a> ecosystem.
+            </p>
+        </section>
+
+        <section id="features">
+            <h2>Features</h2>
+            <ul>
+                <li><strong>Direct C API Integration:</strong> Inline C externals call ONNX Runtime C library directly</li>
+                <li><strong>Type-Safe Tensors:</strong> Support for float32, int32, int64, bool, float16 with full contract verification</li>
+                <li><strong>Multi-Execution Providers:</strong> CPU (default), CUDA, TensorRT, CoreML backend selection</li>
+                <li><strong>Immutable Results:</strong> XOR pattern ensures success or error, never both</li>
+                <li><strong>SCOOP Compatible:</strong> Safe for concurrent/parallel execution</li>
+                <li><strong>Void Safe:</strong> void_safety="all" enforced throughout</li>
+                <li><strong>Design by Contract:</strong> 91+ contract clauses ensure correctness</li>
+            </ul>
+        </section>
+
+        <section id="status">
+            <h2>Status</h2>
+            <p><strong>v1.0.0 - Production Ready</strong></p>
+            <ul>
+                <li>14+ tests passing (100% pass rate)</li>
+                <li>Integrated with simple_speech library</li>
+                <li>Design by Contract throughout</li>
+                <li>Void-safe implementation (void_safety="all")</li>
+                <li>SCOOP compatible for concurrent use</li>
+            </ul>
+        </section>
+
+        <section id="quick-start">
+            <h2>Quick Start</h2>
+            <p>
+                Load a model and run inference:
+            </p>
+            <pre><code>local
+    onnx: SIMPLE_ONNX
+    model: ONNX_MODEL
+    session: ONNX_SESSION
+    input_tensor: ONNX_TENSOR
+    result: ONNX_RESULT
+do
+    create onnx.make
+    model := onnx.load_model ("model.onnx")
+    session := onnx.create_session (model)
+    input_tensor := onnx.create_tensor_float32 (shape)
+    result := session.execute (input_tensor)
+    if result.is_success then
+        process (result.output_tensor)
+    end
+end</code></pre>
+            <p>See <a href="quick.html">Quick API Reference</a> for more examples.</p>
+        </section>
+
+        <section id="installation">
+            <h2>Installation</h2>
+            <p>Add to your ECF configuration:</p>
+            <pre><code>&lt;library name="simple_onnx" location="$SIMPLE_EIFFEL/simple_onnx/simple_onnx.ecf"/&gt;</code></pre>
+        </section>
+
+        <footer>
+            <p>&copy; 2026 Simple Eiffel Contributors. MIT License.</p>
+            <p><a href="https://github.com/simple-eiffel/simple_onnx">GitHub Repository</a></p>
+        </footer>
+    </main>
+</body>
+</html>
