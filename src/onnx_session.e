@@ -98,7 +98,7 @@ feature -- Inference
 			input_not_void: a_input /= Void
 			model_loaded: model /= Void
 			input_shape_matches: a_input.shape.compatible_with (model.input_shape (0))
-			input_dtype_matches: a_input.data_type.is_equal (model.input_dtype (0))
+			input_dtype_matches: a_input.data_type.same_type (model.input_dtype (0))
 		do
 			-- Implementation in Phase 4 (C API call to run inference)
 			create Result.make_failure (0, "Phase 4: Implementation pending")
