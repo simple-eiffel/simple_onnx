@@ -98,17 +98,16 @@ feature -- Inference
 			input_not_void: a_input /= Void
 			model_loaded: model /= Void
 		local
-			l_output_data: ARRAY [REAL_32]
+			l_output_data: detachable ARRAY [REAL_32]
 			l_output_shape: ONNX_SHAPE
 			l_output_tensor: ONNX_TENSOR
-			l_success: BOOLEAN
 		do
 			-- Run actual ONNX Runtime inference
 			l_output_data := run_onnx_c_inference (a_input)
 
-			if l_output_data /= Void and l_output_data.count > 0 then
+			if l_output_data /= Void and then l_output_data.count > 0 then
 				-- Create output tensor with results
-				create l_output_shape.make_from_dimensions (<<1, l_output_data.count>>)
+				create l_output_shape.make (<<1, l_output_data.count>>)
 				create l_output_tensor.make_float32 (l_output_shape)
 				l_output_tensor.set_data_from_array (l_output_data)
 
