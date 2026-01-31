@@ -61,10 +61,10 @@ feature -- Queries
 			tensor_not_void: a_tensor /= Void
 		do
 			Result := a_tensor.shape.compatible_with (shape) and
-					  data_type.same_type (a_tensor.data_type)
+					  data_type.matches_type (a_tensor.data_type)
 		ensure
 			definition: Result = (a_tensor.shape.compatible_with (shape) and
-								   data_type.same_type (a_tensor.data_type))
+								   data_type.matches_type (a_tensor.data_type))
 		end
 
 invariant

@@ -81,7 +81,7 @@ feature -- Access
 
 feature -- Comparison
 
-	same_type (other: ONNX_DATA_TYPE): BOOLEAN
+	matches_type (other: ONNX_DATA_TYPE): BOOLEAN
 			-- Is type same as `other`?
 		require
 			other_not_void: other /= Void
