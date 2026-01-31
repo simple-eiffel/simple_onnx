@@ -90,8 +90,10 @@ feature -- Tests: ONNX_SHAPE
 			-- Test shape creation and queries.
 		local
 			l_shape: ONNX_SHAPE
+			l_runtime: SIMPLE_ONNX
 		do
-			l_shape := create {SIMPLE_ONNX}.make.create_shape (<<2, 3, 4>>)
+			create l_runtime.make
+			l_shape := l_runtime.create_shape (<<2, 3, 4>>)
 			assert ("rank correct", l_shape.rank = 3)
 			assert ("element count", l_shape.element_count = 24)
 			assert ("get dimension", l_shape.get_dimension (1) = 2)
@@ -163,9 +165,11 @@ feature -- Tests: ONNX_RESULT
 			l_result: ONNX_RESULT
 			l_tensor: ONNX_TENSOR
 			l_shape: ONNX_SHAPE
+			l_runtime: SIMPLE_ONNX
 		do
-			l_shape := create {SIMPLE_ONNX}.make.create_shape (<<1, 10>>)
-			l_tensor := create {SIMPLE_ONNX}.make.create_tensor_float32 (l_shape)
+			create l_runtime.make
+			l_shape := l_runtime.create_shape (<<1, 10>>)
+			l_tensor := l_runtime.create_tensor_float32 (l_shape)
 			create l_result.make_success (l_tensor)
 			assert ("is success", l_result.is_success)
 			assert ("output exists", l_result.output_tensor /= Void)
@@ -192,9 +196,11 @@ feature -- Tests: Tensor Data Operations (Phase 5)
 			l_tensor: ONNX_TENSOR
 			l_shape: ONNX_SHAPE
 			l_data: ARRAY [REAL_32]
+			l_runtime: SIMPLE_ONNX
 		do
-			l_shape := create {SIMPLE_ONNX}.make.create_shape (<<3>>)
-			l_tensor := create {SIMPLE_ONNX}.make.create_tensor_float32 (l_shape)
+			create l_runtime.make
+			l_shape := l_runtime.create_shape (<<3>>)
+			l_tensor := l_runtime.create_tensor_float32 (l_shape)
 			create l_data.make_filled (0.0, 1, 3)
 			l_data [1] := 1.5
 			l_data [2] := 2.5
@@ -209,9 +215,11 @@ feature -- Tests: Tensor Data Operations (Phase 5)
 			l_tensor: ONNX_TENSOR
 			l_shape: ONNX_SHAPE
 			l_data: ARRAY [INTEGER_64]
+			l_runtime: SIMPLE_ONNX
 		do
-			l_shape := create {SIMPLE_ONNX}.make.create_shape (<<2>>)
-			l_tensor := create {SIMPLE_ONNX}.make.create_tensor_int64 (l_shape)
+			create l_runtime.make
+			l_shape := l_runtime.create_shape (<<2>>)
+			l_tensor := l_runtime.create_tensor_int64 (l_shape)
 			create l_data.make_filled (0, 1, 2)
 			l_data [1] := 100
 			l_data [2] := 200

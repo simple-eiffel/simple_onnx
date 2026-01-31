@@ -10,6 +10,7 @@
 			<concurrency support="scoop"/>
 			<void_safety support="all"/>
 		</capability>
+		<setting name="total_order_on_reals" value="true"/>
 		<!-- Required Libraries (simple_* first policy) -->
 		<library name="base" location="$ISE_LIBRARY/library/base/base.ecf"/>
 		<!-- Source Files -->
@@ -18,7 +19,9 @@
 	<target name="simple_onnx_tests" extends="simple_onnx">
 		<root class="TEST_APP" feature="make"/>
 		<option warning="error"/>
+		<setting name="total_order_on_reals" value="true"/>
+		<library name="simple_testing" location="$SIMPLE_EIFFEL/simple_testing/simple_testing.ecf"/>
 		<library name="eqa_testing" location="$ISE_LIBRARY/library/testing/testing.ecf"/>
-		<cluster name="testing" location="testing/" recursive="true"/>
+		<cluster name="tests" location="testing/" recursive="true"/>
 	</target>
 </system>
