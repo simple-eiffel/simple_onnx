@@ -131,19 +131,65 @@ feature -- Inference
 			"[
 			#include <stdlib.h>
 			#include <string.h>
+			#include "d:/priv/voxcraft/Clib/onnxruntime/onnxruntime-win-x64-1.20.1/include/onnxruntime_c_api.h"
 
-			// Allocate output array (1024 floats)
-			float* output_data = (float*)malloc(1024 * sizeof(float));
-			if (!output_data) {
+			// Get ONNX Runtime API
+			const OrtApi* g_ort = OrtGetApiBase()->GetApi(ORT_API_VERSION);
+			if (!g_ort) return NULL;
+
+			// Create memory info for CPU execution
+			OrtMemoryInfo* memory_info = NULL;
+			OrtStatus* status = g_ort->CreateMemoryInfo(
+				"Cpu",
+				OrtArenaAllocator,
+				0,
+				OrtMemTypeDefault,
+				&memory_info
+			);
+			if (status) {
+				g_ort->ReleaseStatus(status);
 				return NULL;
 			}
 
-			// Fill output with test data (256 points * 4 values per point)
+			// Allocate output array (1024 floats for 256 3D points)
+			float* output_data = (float*)malloc(1024 * sizeof(float));
+			if (!output_data) {
+				g_ort->ReleaseMemoryInfo(memory_info);
+				return NULL;
+			}
+
+			// Create output tensor with ONNX Runtime
+			OrtValue* output_tensor = NULL;
+			int64_t output_shape[] = {1, 1024};
+			status = g_ort->CreateTensorWithDataAsOrtValue(
+				memory_info,
+				output_data,
+				1024 * sizeof(float),
+				output_shape,
+				2,
+				ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
+				&output_tensor
+			);
+			if (status) {
+				g_ort->ReleaseStatus(status);
+				g_ort->ReleaseMemoryInfo(memory_info);
+				free(output_data);
+				return NULL;
+			}
+
+			// TODO: Run actual session inference here
+			// For now, fill with test data
 			for (int i = 0; i < 1024; i++) {
 				output_data[i] = (float)i / 512.0f - 1.0f;  // Range: [-1, 1]
 			}
 
-			// Success: return pointer (Eiffel will wrap in array)
+			// Cleanup
+			if (output_tensor) {
+				g_ort->ReleaseValue(output_tensor);
+			}
+			g_ort->ReleaseMemoryInfo(memory_info);
+
+			// Return data pointer for Eiffel to wrap
 			return (EIF_REFERENCE)output_data;
 			]"
 		end
