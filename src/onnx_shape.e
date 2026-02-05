@@ -56,46 +56,46 @@ feature -- Access
 			positive: Result > 0
 		end
 
-	get_dimension (index: INTEGER): INTEGER
+	get_dimension (a_index: INTEGER): INTEGER
 			-- Get dimension at `index` (1-based).
 		require
-			valid_index: index >= 1 and index <= rank
+			valid_index: a_index >= 1 and a_index <= rank
 		do
-			Result := dimensions [index]
+			Result := dimensions [a_index]
 		ensure
 			result_non_negative: Result >= 0
 		end
 
 feature -- Queries
 
-	matches (other: ONNX_SHAPE): BOOLEAN
+	matches (a_other: ONNX_SHAPE): BOOLEAN
 			-- Does this shape exactly match `other`?
 		require
-			other_not_void: other /= Void
+			other_not_void: a_other /= Void
 		do
-			if rank /= other.rank then
+			if rank /= a_other.rank then
 				Result := False
 			else
 				Result := True
 				across 1 |..| rank as ic until not Result
 				loop
-					Result := dimensions [ic] = other.dimensions [ic]
+					Result := dimensions [ic] = a_other.dimensions [ic]
 				end
 			end
 		ensure
-			definition: Result = (rank = other.rank and
-								   (across 1 |..| rank as ic all dimensions [ic] = other.dimensions [ic] end))
+			definition: Result = (rank = a_other.rank and
+								   (across 1 |..| rank as ic all dimensions [ic] = a_other.dimensions [ic] end))
 		end
 
-	compatible_with (other: ONNX_SHAPE): BOOLEAN
+	compatible_with (a_other: ONNX_SHAPE): BOOLEAN
 			-- Can this shape be used as input for operations expecting `other` shape?
 			-- Compatible if: same rank and all dims match (strict matching for Phase 1)
 		require
-			other_not_void: other /= Void
+			other_not_void: a_other /= Void
 		do
-			Result := matches (other)
+			Result := matches (a_other)
 		ensure
-			definition: Result = matches (other)
+			definition: Result = matches (a_other)
 		end
 
 feature -- String Representation

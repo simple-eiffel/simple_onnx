@@ -81,14 +81,14 @@ feature -- Access
 
 feature -- Comparison
 
-	matches_type (other: ONNX_DATA_TYPE): BOOLEAN
+	matches_type (a_other: ONNX_DATA_TYPE): BOOLEAN
 			-- Is type same as `other`?
 		require
-			other_not_void: other /= Void
+			other_not_void: a_other /= Void
 		do
-			Result := type_id = other.type_id
+			Result := type_id = a_other.type_id
 		ensure
-			definition: Result = (type_id = other.type_id)
+			definition: Result = (type_id = a_other.type_id)
 		end
 
 feature -- Type Constants

@@ -1,0 +1,38 @@
+
+#ifndef _C1_te34_
+#define _C1_te34_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern void F49_726(EIF_REFERENCE);
+extern EIF_INTEGER_32 F49_727(EIF_REFERENCE);
+extern EIF_INTEGER_32 F49_728(EIF_REFERENCE);
+extern void F49_729(EIF_REFERENCE, EIF_REFERENCE, EIF_REFERENCE);
+extern void EIF_Minit34(void);
+extern EIF_REFERENCE __A57_118();
+extern void F78_1048(EIF_REFERENCE);
+extern EIF_REFERENCE _A57_118();
+extern void F78_1050(EIF_REFERENCE);
+extern EIF_REFERENCE __A57_117();
+extern EIF_REFERENCE _A57_117();
+extern EIF_REFERENCE __A57_122();
+extern void F78_1047(EIF_REFERENCE);
+extern EIF_REFERENCE __A57_116();
+extern EIF_REFERENCE _A57_116();
+extern void F76_984(EIF_REFERENCE);
+extern EIF_REFERENCE F970_6192(EIF_REFERENCE, EIF_REFERENCE);
+extern void F44_479(EIF_REFERENCE, EIF_REFERENCE);
+extern void F78_1049(EIF_REFERENCE);
+extern EIF_REFERENCE _A57_122();
+extern EIF_REFERENCE F1_24(EIF_REFERENCE);
+extern EIF_REFERENCE __A57_119();
+extern void F78_1053(EIF_REFERENCE);
+extern EIF_REFERENCE _A57_119();
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

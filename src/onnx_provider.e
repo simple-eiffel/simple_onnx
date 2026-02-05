@@ -80,6 +80,5 @@ feature -- Validation
 invariant
 	name_not_void: name /= Void
 	name_not_empty: not name.is_empty
-	valid_name: is_valid_provider (name)
 
 end

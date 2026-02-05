@@ -1,0 +1,23 @@
+
+#ifndef _C1_co12_
+#define _C1_co12_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern EIF_REFERENCE F20_269(EIF_REFERENCE);
+extern EIF_REFERENCE F20_270(EIF_REFERENCE);
+extern EIF_REFERENCE F20_271(EIF_REFERENCE);
+extern EIF_REFERENCE F20_272(EIF_REFERENCE);
+extern EIF_REFERENCE F20_273(EIF_REFERENCE);
+extern EIF_REFERENCE F20_274(EIF_REFERENCE);
+extern EIF_REFERENCE F20_275(EIF_REFERENCE);
+extern EIF_REFERENCE F20_276(EIF_REFERENCE);
+extern void EIF_Minit12(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

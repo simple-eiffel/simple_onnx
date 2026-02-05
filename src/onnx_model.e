@@ -35,54 +35,54 @@ feature -- Access
 	opset_version: INTEGER
 			-- ONNX opset version used by model.
 
-	input_name (index: INTEGER): detachable STRING
+	input_name (a_index: INTEGER): detachable STRING
 			-- Get name of input at `index` (0-based).
 		require
-			valid_index: index >= 0 and index < input_count
+			valid_index: a_index >= 0 and a_index < input_count
 		do
 			-- Implementation in Phase 4 (stub)
 		ensure
 			result_not_empty: Result /= Void implies not Result.is_empty
 		end
 
-	input_shape (index: INTEGER): detachable ONNX_SHAPE
+	input_shape (a_index: INTEGER): detachable ONNX_SHAPE
 			-- Get shape of input at `index` (0-based).
 		require
-			valid_index: index >= 0 and index < input_count
+			valid_index: a_index >= 0 and a_index < input_count
 		do
 			-- Implementation in Phase 4 (stub)
 		end
 
-	input_dtype (index: INTEGER): detachable ONNX_DATA_TYPE
+	input_dtype (a_index: INTEGER): detachable ONNX_DATA_TYPE
 			-- Get data type of input at `index` (0-based).
 		require
-			valid_index: index >= 0 and index < input_count
+			valid_index: a_index >= 0 and a_index < input_count
 		do
 			-- Implementation in Phase 4 (stub)
 		end
 
-	output_name (index: INTEGER): detachable STRING
+	output_name (a_index: INTEGER): detachable STRING
 			-- Get name of output at `index` (0-based).
 		require
-			valid_index: index >= 0 and index < output_count
+			valid_index: a_index >= 0 and a_index < output_count
 		do
 			-- Implementation in Phase 4 (stub)
 		ensure
 			result_not_empty: Result /= Void implies not Result.is_empty
 		end
 
-	output_shape (index: INTEGER): detachable ONNX_SHAPE
+	output_shape (a_index: INTEGER): detachable ONNX_SHAPE
 			-- Get shape of output at `index` (0-based).
 		require
-			valid_index: index >= 0 and index < output_count
+			valid_index: a_index >= 0 and a_index < output_count
 		do
 			-- Implementation in Phase 4 (stub)
 		end
 
-	output_dtype (index: INTEGER): detachable ONNX_DATA_TYPE
+	output_dtype (a_index: INTEGER): detachable ONNX_DATA_TYPE
 			-- Get data type of output at `index` (0-based).
 		require
-			valid_index: index >= 0 and index < output_count
+			valid_index: a_index >= 0 and a_index < output_count
 		do
 			-- Implementation in Phase 4 (stub)
 		end

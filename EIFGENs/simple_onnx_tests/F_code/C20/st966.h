@@ -1,0 +1,36 @@
+
+#ifndef _C20_st966_
+#define _C20_st966_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern void F851_4590(EIF_REFERENCE, EIF_INTEGER_32);
+extern void F851_4591(EIF_REFERENCE, EIF_INTEGER_32);
+extern EIF_INTEGER_32 F851_4592(EIF_REFERENCE, EIF_REFERENCE);
+extern EIF_BOOLEAN F851_4593(EIF_REFERENCE);
+extern EIF_BOOLEAN F851_4594(EIF_REFERENCE, EIF_REFERENCE, EIF_REFERENCE);
+extern EIF_BOOLEAN F851_4595(EIF_REFERENCE, EIF_REFERENCE);
+extern EIF_REFERENCE F851_4596(EIF_REFERENCE, EIF_INTEGER_32);
+extern void EIF_Minit966(void);
+extern EIF_BOOLEAN F1_9(EIF_REFERENCE, EIF_REFERENCE);
+extern EIF_BOOLEAN F965_5972(EIF_REFERENCE, EIF_REFERENCE);
+extern EIF_BOOLEAN F965_5975(EIF_REFERENCE, EIF_REFERENCE);
+extern EIF_BOOLEAN F844_4484(EIF_REFERENCE, EIF_REFERENCE);
+extern EIF_INTEGER_32 F965_5940(EIF_REFERENCE);
+extern EIF_INTEGER_32 F965_5939(EIF_REFERENCE);
+extern char *(*R3669[])();
+extern char *(*R2929[])();
+extern char *(*R3654[])();
+extern char *(*R3567[])();
+extern char *(*R3568[])();
+extern long O3580[];
+extern long O2927[];
+extern long O3671[];
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

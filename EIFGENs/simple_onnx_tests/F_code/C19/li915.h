@@ -1,0 +1,28 @@
+
+#ifndef _C19_li915_
+#define _C19_li915_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern EIF_BOOLEAN F737_4002(EIF_REFERENCE, EIF_REFERENCE);
+extern EIF_BOOLEAN F737_4003(EIF_REFERENCE);
+extern EIF_BOOLEAN F737_4004(EIF_REFERENCE);
+extern void F737_1(EIF_REFERENCE, int);
+extern void EIF_Minit915(void);
+extern EIF_BOOLEAN F1_9(EIF_REFERENCE, EIF_REFERENCE);
+extern void F838_4377(EIF_REFERENCE);
+extern EIF_BOOLEAN F579_3452(EIF_REFERENCE);
+extern void F838_4380(EIF_REFERENCE, EIF_REFERENCE);
+extern void F838_4375(EIF_REFERENCE);
+extern EIF_INTEGER_32 F838_4365(EIF_REFERENCE);
+extern EIF_REFERENCE F838_4355(EIF_REFERENCE);
+extern EIF_NATURAL_16 F838_4349(EIF_REFERENCE);
+extern long O2927[];
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
