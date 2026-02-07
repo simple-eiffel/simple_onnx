@@ -1,0 +1,6 @@
+# Eiffel build artifacts
+
+EIFGENs/
+*.melted
+*.epr
+*.log
