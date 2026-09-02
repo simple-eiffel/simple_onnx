@@ -4,3 +4,6 @@ EIFGENs/
 *.melted
 *.epr
 *.log
+
+# Vendored ONNX Runtime distribution (hundreds of MB; download separately)
+lib/onnxruntime/

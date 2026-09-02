@@ -13,6 +13,9 @@
 		<setting name="total_order_on_reals" value="true"/>
 		<!-- Required Libraries (simple_* first policy) -->
 		<library name="base" location="$ISE_LIBRARY/library/base/base.ecf"/>
+		<!-- ONNX Runtime C API -->
+		<external_include location="$(SIMPLE_EIFFEL)/simple_onnx/lib/onnxruntime/include"/>
+		<external_library location="$(SIMPLE_EIFFEL)/simple_onnx/lib/onnxruntime/lib/onnxruntime.lib"/>
 		<!-- Source Files -->
 		<cluster name="src" location="src/" recursive="true"/>
 	</target>

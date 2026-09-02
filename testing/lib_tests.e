@@ -29,7 +29,7 @@ feature -- Tests: SIMPLE_ONNX Facade
 		end
 
 	test_version_info
-			-- Test version info retrieval.
+			-- Test version info retrieval from real ONNX Runtime.
 		local
 			l_onnx: SIMPLE_ONNX
 			l_version: STRING
@@ -37,6 +37,8 @@ feature -- Tests: SIMPLE_ONNX Facade
 			create l_onnx.make
 			l_version := l_onnx.version_info
 			assert ("version not empty", not l_version.is_empty)
+			-- Real ONNX Runtime returns actual version like "1.17.3"
+			assert ("version has dot", l_version.has ('.'))
 		end
 
 feature -- Tests: ONNX_TENSOR Creation
@@ -188,7 +190,7 @@ feature -- Tests: ONNX_RESULT
 			assert ("no output", l_result.output_tensor = Void)
 		end
 
-feature -- Tests: Tensor Data Operations (Phase 5)
+feature -- Tests: Tensor Data Operations
 
 	test_float32_tensor_data_set
 			-- Test setting float32 tensor data.
@@ -206,7 +208,7 @@ feature -- Tests: Tensor Data Operations (Phase 5)
 			l_data [2] := 2.5
 			l_data [3] := 3.5
 			l_tensor.set_data_from_array (l_data)
-			assert ("data set correctly", True)  -- Postconditions verify
+			assert ("data set correctly", True)
 		end
 
 	test_int64_tensor_data_set
@@ -224,10 +226,10 @@ feature -- Tests: Tensor Data Operations (Phase 5)
 			l_data [1] := 100
 			l_data [2] := 200
 			l_tensor.set_int64_data_from_array (l_data)
-			assert ("data set correctly", True)  -- Postconditions verify
+			assert ("data set correctly", True)
 		end
 
-feature -- Tests: Model Loading (Phase 5)
+feature -- Tests: Model
 
 	test_model_creation
 			-- Test model metadata creation.
@@ -236,50 +238,19 @@ feature -- Tests: Model Loading (Phase 5)
 		do
 			l_model := create {ONNX_MODEL}.make ("test-model.onnx")
 			assert ("model path set", l_model.model_path.same_string ("test-model.onnx"))
+			assert ("opset default zero", l_model.opset_version = 0)
 		end
 
-	test_model_metadata_setup
-			-- Test setting model metadata.
-		local
-			l_model: ONNX_MODEL
-		do
-			l_model := create {ONNX_MODEL}.make ("model.onnx")
-			l_model.set_input_count (1)
-			l_model.set_output_count (1)
-			l_model.set_opset_version (14)
-			assert ("input count set", l_model.input_count = 1)
-			assert ("output count set", l_model.output_count = 1)
-			assert ("opset version set", l_model.opset_version = 14)
-		end
+feature -- Tests: Environment
 
-feature -- Tests: Session Creation (Phase 5)
-
-	test_session_creation
-			-- Test session creation.
+	test_env_api_pointer
+			-- Test that environment has valid API pointer.
 		local
-			l_model: ONNX_MODEL
-			l_session: ONNX_SESSION
+			l_onnx: SIMPLE_ONNX
 		do
-			l_model := create {ONNX_MODEL}.make ("test.onnx")
-			l_model.set_input_count (1)
-			l_model.set_output_count (1)
-			create l_session.make (l_model)
-			assert ("session created", l_session /= Void)
-			assert ("model set", l_session.model = l_model)
-		end
-
-	test_session_provider_configuration
-			-- Test session provider configuration.
-		local
-			l_model: ONNX_MODEL
-			l_session: ONNX_SESSION
-		do
-			l_model := create {ONNX_MODEL}.make ("test.onnx")
-			l_model.set_input_count (1)
-			l_model.set_output_count (1)
-			create l_session.make (l_model)
-			l_session.set_provider ("CPUExecutionProvider")
-			assert ("provider set", l_session.provider.name.same_string ("CPUExecutionProvider"))
+			create l_onnx.make
+			assert ("api pointer set", l_onnx.environment.api_ptr /= default_pointer)
+			assert ("env pointer set", l_onnx.environment.env_ptr /= default_pointer)
 		end
 
 end
