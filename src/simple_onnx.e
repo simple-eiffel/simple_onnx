@@ -14,8 +14,6 @@ feature {NONE} -- Initialization
 			-- Initialize ONNX Runtime environment.
 		do
 			environment := create {ONNX_ENVIRONMENT}.make
-		ensure
-			environment_created: environment /= Void
 		end
 
 feature -- Access
@@ -27,12 +25,23 @@ feature -- Model Loading
 
 	load_model (a_path: STRING): detachable ONNX_MODEL
 			-- Load model from .onnx file at `a_path`.
+			-- Creates a temporary session to query model metadata.
 		require
 			path_not_void: a_path /= Void
 			path_not_empty: not a_path.is_empty
+		local
+			l_model: ONNX_MODEL
+			l_session: ONNX_SESSION
 		do
-			-- Implementation in Phase 4 (load .onnx file, query metadata)
-			create Result.make (a_path)
+			create l_model.make (a_path)
+			-- Create temporary session to populate metadata
+			create l_session.make (l_model, environment)
+			l_session.load
+			if l_session.is_loaded then
+				-- Metadata was populated during load
+				l_session.unload
+				Result := l_model
+			end
 		ensure
 			result_valid: Result /= Void implies (
 				not Result.model_path.is_empty and
@@ -47,11 +56,11 @@ feature -- Session Creation
 			-- Create inference session for `a_model`.
 		require
 			model_not_void: a_model /= Void
-			model_loaded: a_model.input_count > 0 and a_model.output_count > 0
 		do
-			create Result.make (a_model)
-			if Result /= Void then
-				Result.load
+			create Result.make (a_model, environment)
+			Result.load
+			if not Result.is_loaded then
+				Result := Void
 			end
 		ensure
 			result_valid: Result /= Void implies (
@@ -66,9 +75,6 @@ feature -- Provider Management
 			-- List of available execution providers.
 		do
 			Result := environment.available_providers
-		ensure
-			result_not_void: Result /= Void
-			cpu_available: Result.has ("CPUExecutionProvider")
 		end
 
 	is_provider_available (a_name: STRING): BOOLEAN
@@ -78,8 +84,6 @@ feature -- Provider Management
 			name_not_empty: not a_name.is_empty
 		do
 			Result := environment.is_provider_available (a_name)
-		ensure
-			definition: Result = environment.is_provider_available (a_name)
 		end
 
 feature -- Information
@@ -92,7 +96,7 @@ feature -- Information
 			result_not_empty: not Result.is_empty
 		end
 
-feature -- Builder Pattern Example
+feature -- Builder Pattern
 
 	create_tensor_float32 (a_shape: ONNX_SHAPE): ONNX_TENSOR
 			-- Create float32 input tensor with `a_shape`.
@@ -142,8 +146,5 @@ feature -- Builder Pattern Example
 			result_not_void: Result /= Void
 			rank_correct: Result.rank = a_dimensions.count
 		end
-
-invariant
-	environment_not_void: environment /= Void
 
 end

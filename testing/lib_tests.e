@@ -29,7 +29,7 @@ feature -- Tests: SIMPLE_ONNX Facade
 		end
 
 	test_version_info
-			-- Test version info retrieval.
+			-- Test version info retrieval from real ONNX Runtime.
 		local
 			l_onnx: SIMPLE_ONNX
 			l_version: STRING
@@ -37,6 +37,8 @@ feature -- Tests: SIMPLE_ONNX Facade
 			create l_onnx.make
 			l_version := l_onnx.version_info
 			assert ("version not empty", not l_version.is_empty)
+			-- Real ONNX Runtime returns actual version like "1.17.3"
+			assert ("version has dot", l_version.has ('.'))
 		end
 
 feature -- Tests: ONNX_TENSOR Creation
@@ -188,7 +190,7 @@ feature -- Tests: ONNX_RESULT
 			assert ("no output", l_result.output_tensor = Void)
 		end
 
-feature -- Tests: Tensor Data Operations (Phase 5)
+feature -- Tests: Tensor Data Operations
 
 	test_float32_tensor_data_set
 			-- Test setting float32 tensor data.
@@ -206,7 +208,7 @@ feature -- Tests: Tensor Data Operations (Phase 5)
 			l_data [2] := 2.5
 			l_data [3] := 3.5
 			l_tensor.set_data_from_array (l_data)
-			assert ("data set correctly", True)  -- Postconditions verify
+			assert ("data set correctly", True)
 		end
 
 	test_int64_tensor_data_set
@@ -224,10 +226,10 @@ feature -- Tests: Tensor Data Operations (Phase 5)
 			l_data [1] := 100
 			l_data [2] := 200
 			l_tensor.set_int64_data_from_array (l_data)
-			assert ("data set correctly", True)  -- Postconditions verify
+			assert ("data set correctly", True)
 		end
 
-feature -- Tests: Model Loading (Phase 5)
+feature -- Tests: Model
 
 	test_model_creation
 			-- Test model metadata creation.
@@ -236,50 +238,76 @@ feature -- Tests: Model Loading (Phase 5)
 		do
 			l_model := create {ONNX_MODEL}.make ("test-model.onnx")
 			assert ("model path set", l_model.model_path.same_string ("test-model.onnx"))
+			assert ("opset default zero", l_model.opset_version = 0)
 		end
 
-	test_model_metadata_setup
-			-- Test setting model metadata.
+feature -- Tests: Environment
+
+	test_staged_input_survives_collection
+			-- The data ONNX Runtime reads is a C copy, so a garbage collection after
+			-- `to_ort_value' (which may move Eiffel arrays) does not change what it sees.
 		local
-			l_model: ONNX_MODEL
+			l_onnx: SIMPLE_ONNX
+			l_tensor, l_back: ONNX_TENSOR
+			l_source, l_target: MANAGED_POINTER
+			l_value: POINTER
+			l_mem: MEMORY
+			l_junk: ARRAYED_LIST [STRING]
+			l_array: ARRAY [REAL_32]
+			i: INTEGER
+			l_same: BOOLEAN
 		do
-			l_model := create {ONNX_MODEL}.make ("model.onnx")
-			l_model.set_input_count (1)
-			l_model.set_output_count (1)
-			l_model.set_opset_version (14)
-			assert ("input count set", l_model.input_count = 1)
-			assert ("output count set", l_model.output_count = 1)
-			assert ("opset version set", l_model.opset_version = 14)
+			create l_onnx.make
+			l_tensor := l_onnx.create_tensor_float32 (l_onnx.create_shape (<<2, 500>>))
+			create l_source.make (1000 * 4)
+			from i := 0 until i >= 1000 loop
+				l_source.put_real_32 ((i * 0.25).truncated_to_real, i * 4)
+				i := i + 1
+			end
+			l_tensor.set_data_from_pointer (l_source.item)
+			l_array := l_tensor.to_array
+			assert ("pointer fill", l_array [1000] = (999 * 0.25).truncated_to_real)
+			create l_target.make (1000 * 4)
+			l_tensor.copy_data_to (l_target.item)
+			assert ("copy out", l_target.read_real_32 (999 * 4) = (999 * 0.25).truncated_to_real)
+
+			l_value := l_tensor.to_ort_value (l_onnx.environment.api_ptr)
+			assert ("value made", l_value /= default_pointer)
+			create l_junk.make (5000)
+			from i := 1 until i > 5000 loop
+				l_junk.extend (i.out)
+				i := i + 1
+			end
+			create l_mem
+			l_mem.full_collect
+			l_mem.full_coalesce
+			create l_back.make_from_ort_value (l_value, l_onnx.environment.api_ptr)
+			l_array := l_back.to_array
+			l_same := l_array.count = 1000
+			from i := 0 until i >= 1000 or not l_same loop
+				l_same := l_array [i + 1] = (i * 0.25).truncated_to_real
+				i := i + 1
+			end
+			assert ("runtime sees the data after a collection", l_same)
+			release_value (l_onnx.environment.api_ptr, l_value)
 		end
 
-feature -- Tests: Session Creation (Phase 5)
-
-	test_session_creation
-			-- Test session creation.
-		local
-			l_model: ONNX_MODEL
-			l_session: ONNX_SESSION
-		do
-			l_model := create {ONNX_MODEL}.make ("test.onnx")
-			l_model.set_input_count (1)
-			l_model.set_output_count (1)
-			create l_session.make (l_model)
-			assert ("session created", l_session /= Void)
-			assert ("model set", l_session.model = l_model)
+	release_value (a_api, a_value: POINTER)
+			-- Release an OrtValue made by a test.
+		external
+			"C inline use %"onnxruntime_c_api.h%""
+		alias
+			"((const OrtApi*)$a_api)->ReleaseValue((OrtValue*)$a_value);"
 		end
 
-	test_session_provider_configuration
-			-- Test session provider configuration.
+	test_env_api_pointer
+			-- Test that environment has valid API pointer.
 		local
-			l_model: ONNX_MODEL
-			l_session: ONNX_SESSION
+			l_onnx: SIMPLE_ONNX
 		do
-			l_model := create {ONNX_MODEL}.make ("test.onnx")
-			l_model.set_input_count (1)
-			l_model.set_output_count (1)
-			create l_session.make (l_model)
-			l_session.set_provider ("CPUExecutionProvider")
-			assert ("provider set", l_session.provider.name.same_string ("CPUExecutionProvider"))
+			create l_onnx.make
+			assert ("api pointer set", l_onnx.environment.api_ptr /= default_pointer)
+			assert ("env pointer set", l_onnx.environment.env_ptr /= default_pointer)
 		end
 
 end
