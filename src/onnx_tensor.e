@@ -188,10 +188,14 @@ feature -- OrtValue Conversion
 
 	to_ort_value (a_api_ptr: POINTER): POINTER
 			-- Convert Eiffel tensor to OrtValue* for inference.
+			-- ONNX Runtime keeps reading the data until the value is released, and the garbage
+			-- collector may move Eiffel arrays meanwhile, so the data is copied into C memory
+			-- (`staging') that this tensor keeps until its next conversion.
 		require
 			api_valid: a_api_ptr /= default_pointer
 		local
 			l_shape_buf: MANAGED_POINTER
+			l_staging: MANAGED_POINTER
 			i: INTEGER
 		do
 			-- Build int64_t shape array
@@ -202,15 +206,22 @@ feature -- OrtValue Conversion
 			end
 
 			if data_type.type_id = 7 then
-				Result := c_create_int64_tensor (a_api_ptr, int64_data.area.base_address,
+				create l_staging.make (int64_data.count * 8)
+				l_staging.item.memory_copy (int64_data.area.base_address, int64_data.count * 8)
+				Result := c_create_int64_tensor (a_api_ptr, l_staging.item,
 					int64_data.count, l_shape_buf.item, shape.rank)
 			elseif data_type.type_id = 1 then
-				Result := c_create_float_tensor (a_api_ptr, data.area.base_address,
+				create l_staging.make (data.count * 4)
+				l_staging.item.memory_copy (data.area.base_address, data.count * 4)
+				Result := c_create_float_tensor (a_api_ptr, l_staging.item,
 					data.count, l_shape_buf.item, shape.rank)
 			elseif data_type.type_id = 6 then
-				Result := c_create_int32_tensor (a_api_ptr, int_data.area.base_address,
+				create l_staging.make (int_data.count * 4)
+				l_staging.item.memory_copy (int_data.area.base_address, int_data.count * 4)
+				Result := c_create_int32_tensor (a_api_ptr, l_staging.item,
 					int_data.count, l_shape_buf.item, shape.rank)
 			end
+			staging := l_staging
 		end
 
 feature -- Data Manipulation
@@ -279,7 +290,25 @@ feature -- Data Manipulation
 					 end
 		end
 
+	set_data_from_pointer (a_source: POINTER)
+			-- Set tensor data from `element_count' float32 values at `a_source' (C memory).
+		require
+			is_float32: data_type.type_id = 1
+			source_exists: a_source /= default_pointer
+		do
+			data.area.base_address.memory_copy (a_source, element_count * 4)
+		end
+
 feature -- Data Retrieval
+
+	copy_data_to (a_target: POINTER)
+			-- Copy the `element_count' float32 values to `a_target' (C memory of at least that size).
+		require
+			is_float32: data_type.type_id = 1
+			target_exists: a_target /= default_pointer
+		do
+			a_target.memory_copy (data.area.base_address, element_count * 4)
+		end
 
 	to_array: ARRAY [REAL_32]
 			-- Convert tensor to float32 array.
@@ -350,6 +379,9 @@ feature {NONE} -- Implementation
 
 	bool_data: ARRAY [BOOLEAN]
 			-- Bool data storage.
+
+	staging: detachable MANAGED_POINTER
+			-- C copy of the data handed to ONNX Runtime by the last `to_ort_value' (kept alive here).
 
 feature {NONE} -- C externals: OrtValue creation
 

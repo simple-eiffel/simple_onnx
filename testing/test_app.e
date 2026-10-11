@@ -33,6 +33,7 @@ feature {NONE} -- Initialization
 			run_test (agent l_tests.test_create_int32_tensor, "test_create_int32_tensor")
 			run_test (agent l_tests.test_create_int64_tensor, "test_create_int64_tensor")
 			run_test (agent l_tests.test_float32_tensor_data_set, "test_float32_tensor_data_set")
+			run_test (agent l_tests.test_staged_input_survives_collection, "test_staged_input_survives_collection")
 			run_test (agent l_tests.test_int64_tensor_data_set, "test_int64_tensor_data_set")
 
 			-- Shape tests
