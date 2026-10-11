@@ -248,8 +248,13 @@ feature {NONE} -- C externals
 
 	c_create_session (a_api: POINTER; a_env: POINTER; a_path: POINTER; a_opt_level: INTEGER): POINTER
 			-- Create OrtSession* from model file path.
+			-- MARKED `blocking': loading a large model takes seconds, and a collection
+			-- waits for every thread in an unmarked C call, so every other processor froze
+			-- with it (2026-10-11: simple_prompter's window stopped for 5 seconds while
+			-- BiRefNet's 973 MB loaded). Fleet law (simple_console 2026-09-02): a C external
+			-- that waits must be marked `C blocking'. Safe: every argument is C memory.
 		external
-			"C inline use %"onnxruntime_c_api.h%", <windows.h>"
+			"C blocking inline use %"onnxruntime_c_api.h%", <windows.h>"
 		alias
 			"[
 				const OrtApi* api = (const OrtApi*)$a_api;
@@ -297,8 +302,11 @@ feature {NONE} -- C externals
 			a_input_name: POINTER; a_input_value: POINTER;
 			a_output_name: POINTER): POINTER
 			-- Run inference with single input/output.
+			-- MARKED `blocking' (see `c_create_session'): a 10-second BiRefNet run froze
+			-- simple_prompter's window for 10 seconds. Safe: the names are C_STRING memory and
+			-- the input's data is staged in C memory by `{ONNX_TENSOR}.to_ort_value'.
 		external
-			"C inline use %"onnxruntime_c_api.h%""
+			"C blocking inline use %"onnxruntime_c_api.h%""
 		alias
 			"[
 				const OrtApi* api = (const OrtApi*)$a_api;
@@ -328,8 +336,10 @@ feature {NONE} -- C externals
 			a_input_names: POINTER; a_input_values: POINTER; a_input_count: INTEGER;
 			a_output_names: POINTER; a_output_count: INTEGER): POINTER
 			-- Run inference with multiple inputs, return first output.
+			-- MARKED `blocking' (see `c_run_single'). Safe: the name and value arrays are
+			-- MANAGED_POINTER memory and each input's data is staged in C memory.
 		external
-			"C inline use %"onnxruntime_c_api.h%""
+			"C blocking inline use %"onnxruntime_c_api.h%""
 		alias
 			"[
 				const OrtApi* api = (const OrtApi*)$a_api;
