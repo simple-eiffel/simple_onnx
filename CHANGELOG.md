@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-10-11
+
+### Fixed
+- Tensor input is staged in C memory (`to_ort_value`), so a collection can no longer move
+  data ONNX Runtime is still reading (G9, merged earlier today, recorded here).
+- Session creation and both inference calls are marked `C blocking`. A collection waits for
+  every thread inside an unmarked C call, so a long load or run froze every other processor
+  with it: simple_prompter's window stopped for 5 seconds while BiRefNet-portrait loaded and
+  10 while it ran. Measured with simple_image_ai's `test_cutout_lets_other_processors_run`:
+  the longest stall on the other processor fell from 12,785 ms to under 650 ms. Safe because
+  every argument is C memory (C_STRING, MANAGED_POINTER, input staged by `to_ort_value`).
+
 ## [1.0.0] - 2026-01-31
 
 ### Added
