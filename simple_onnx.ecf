@@ -14,8 +14,37 @@
 		<!-- Required Libraries (simple_* first policy) -->
 		<library name="base" location="$ISE_LIBRARY/library/base/base.ecf"/>
 		<!-- ONNX Runtime C API -->
-		<external_include location="$(SIMPLE_EIFFEL)/simple_onnx/lib/onnxruntime/include"/>
-		<external_library location="$(SIMPLE_EIFFEL)/simple_onnx/lib/onnxruntime/lib/onnxruntime.lib"/>
+		<external_include location="$(SIMPLE_EIFFEL)/simple_onnx/Clib"/>
+		<external_cflag value="-I/opt/homebrew/opt/onnxruntime/include/onnxruntime">
+			<condition>
+				<platform value="macintosh"/>
+			</condition>
+		</external_cflag>
+		<external_linker_flag value="-L/opt/homebrew/opt/onnxruntime/lib -lonnxruntime">
+			<condition>
+				<platform value="macintosh"/>
+			</condition>
+		</external_linker_flag>
+		<external_cflag value="-I/opt/onnxruntime/include">
+			<condition>
+				<platform value="unix"/>
+			</condition>
+		</external_cflag>
+		<external_linker_flag value="-L/opt/onnxruntime/lib -lonnxruntime">
+			<condition>
+				<platform value="unix"/>
+			</condition>
+		</external_linker_flag>
+		<external_include location="$(SIMPLE_EIFFEL)/simple_onnx/lib/onnxruntime/include">
+			<condition>
+				<platform value="windows"/>
+			</condition>
+		</external_include>
+		<external_library location="$(SIMPLE_EIFFEL)/simple_onnx/lib/onnxruntime/lib/onnxruntime.lib">
+			<condition>
+				<platform value="windows"/>
+			</condition>
+		</external_library>
 		<!-- Source Files -->
 		<cluster name="src" location="src/" recursive="true"/>
 	</target>
