@@ -254,7 +254,7 @@ feature {NONE} -- C externals
 			-- BiRefNet's 973 MB loaded). Fleet law (simple_console 2026-09-02): a C external
 			-- that waits must be marked `C blocking'. Safe: every argument is C memory.
 		external
-			"C blocking inline use %"onnxruntime_c_api.h%", <windows.h>"
+			"C blocking inline use %"onnx_path.h%""
 		alias
 			"[
 				const OrtApi* api = (const OrtApi*)$a_api;
@@ -278,16 +278,7 @@ feature {NONE} -- C externals
 				}
 				api->SetSessionGraphOptimizationLevel(opts, level);
 
-				/* Convert UTF-8 path to wide string for Windows */
-				{
-					const char* utf8_path = (const char*)$a_path;
-					int wlen = MultiByteToWideChar(CP_UTF8, 0, utf8_path, -1, NULL, 0);
-					wchar_t* wpath = (wchar_t*)malloc(wlen * sizeof(wchar_t));
-					MultiByteToWideChar(CP_UTF8, 0, utf8_path, -1, wpath, wlen);
-
-					status = api->CreateSession((OrtEnv*)$a_env, wpath, opts, &session);
-					free(wpath);
-				}
+				status = onnx_create_session(api, (OrtEnv*)$a_env, (const char*)$a_path, opts, &session);
 				api->ReleaseSessionOptions(opts);
 
 				if (status != NULL) {
