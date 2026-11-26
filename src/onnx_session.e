@@ -84,9 +84,11 @@ feature -- Lifecycle
 		local
 			l_c_path: C_STRING
 		do
-			create l_c_path.make (model.model_path)
-			session_ptr := c_create_session (environment.api_ptr, environment.env_ptr,
-				l_c_path.item, optimization_level)
+			if environment.is_ready then
+				create l_c_path.make (model.model_path)
+				session_ptr := c_create_session (environment.api_ptr, environment.env_ptr,
+					l_c_path.item, optimization_level)
+			end
 			is_loaded := (session_ptr /= default_pointer)
 			if is_loaded then
 				model.populate_from_session (session_ptr, environment.api_ptr)

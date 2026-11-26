@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-11-26
+
+### Changed
+- ONNX Runtime 1.17.3 to **1.32.0** (Microsoft's NuGet package, signed), headers, import
+  library and DLLs. Suite 19/0; simple_image_ai's cutout masks still match rembg's (6/0);
+  simple_speech's sherpa-onnx diarization runs on the same DLL (18/0).
+
+### Fixed
+- Every test run before today loaded Windows' own `System32\onnxruntime.dll` (1.17.1), not
+  ours: Windows searches System32 before PATH. `ec.sh run` now copies it beside the test exe.
+- An onnxruntime.dll without this build's API crashed `SIMPLE_ONNX.make` (it created the
+  environment through a null API pointer). New `ONNX_ENVIRONMENT.is_ready`; no environment is
+  created without the API, and `ONNX_SESSION.load` then leaves `is_loaded` False. Against
+  Windows' copy the suite now reports 2 clean failures instead of 13 crashes.
+
 ## [1.1.0] - 2026-10-11
 
 ### Fixed

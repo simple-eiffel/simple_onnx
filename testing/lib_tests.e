@@ -308,6 +308,7 @@ feature -- Tests: Environment
 			create l_onnx.make
 			assert ("api pointer set", l_onnx.environment.api_ptr /= default_pointer)
 			assert ("env pointer set", l_onnx.environment.env_ptr /= default_pointer)
+			assert ("environment ready", l_onnx.environment.is_ready)
 		end
 
 end

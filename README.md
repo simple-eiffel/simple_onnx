@@ -64,6 +64,30 @@ Add to your ECF:
 <library name="simple_onnx" location="$SIMPLE_EIFFEL/simple_onnx/simple_onnx.ecf"/>
 ```
 
+### ONNX Runtime on Windows
+
+`lib/onnxruntime/` (not in git) holds ONNX Runtime **1.32.0**, CPU, from Microsoft's NuGet
+package `Microsoft.ML.OnnxRuntime` 1.32.0 (published 2026-11-13; package SHA-512 as NuGet's
+catalog publishes it; both DLLs Authenticode-signed by Microsoft Corporation). To rebuild it,
+unzip the `.nupkg` and copy:
+
+| From the package | To `lib/onnxruntime/` |
+|---|---|
+| `build/native/include/*` | `include/` |
+| `runtimes/win-x64/native/onnxruntime.lib`, `onnxruntime_providers_shared.lib` | `lib/` |
+| `runtimes/win-x64/native/onnxruntime.dll`, `onnxruntime_providers_shared.dll` | `bin/` |
+| `LICENSE`, `ThirdPartyNotices.txt` | `.` |
+
+- **Ship `onnxruntime.dll` beside your exe.** Windows 11 has its own, older
+  `System32\onnxruntime.dll` (1.17.1), and Windows searches System32 before PATH. Built
+  against these headers, that copy has no API version 32: `ONNX_ENVIRONMENT.is_ready` is then
+  False and `ONNX_SESSION.load` leaves `is_loaded` False. `ec.sh run` copies it beside test
+  exes for this reason.
+- **One copy for the fleet.** simple_speech's sherpa-onnx folders and simple_scholar's `bin/`
+  carry byte-identical copies of these two DLLs. Change them here first, then copy.
+  sherpa-onnx-c-api.dll imports `onnxruntime.dll` by ordinal 1 (`OrtGetApiBase` in every
+  version so far); check it again whenever the DLL changes.
+
 ## License
 
 MIT License - See LICENSE file
