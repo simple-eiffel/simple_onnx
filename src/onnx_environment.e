@@ -11,11 +11,18 @@ create
 feature {NONE} -- Initialization
 
 	make
-			-- Initialize ONNX Runtime environment.
+			-- Initialize ONNX Runtime environment. An onnxruntime.dll older than the headers
+			-- simple_onnx was built with has no API of that version: then no environment is
+			-- created and `is_ready' is False. (Windows 11 ships an older one in System32,
+			-- which loads unless ours sits beside the exe.)
 		do
 			api_ptr := c_get_api
-			env_ptr := c_create_env (api_ptr)
+			if api_ptr /= default_pointer then
+				env_ptr := c_create_env (api_ptr)
+			end
 			available_providers := create_provider_list
+		ensure
+			no_env_without_api: api_ptr = default_pointer implies env_ptr = default_pointer
 		end
 
 feature -- Access
@@ -28,6 +35,12 @@ feature -- Access
 
 	available_providers: ARRAYED_LIST [STRING]
 			-- List of available execution providers on this system.
+
+	is_ready: BOOLEAN
+			-- Did the loaded onnxruntime.dll provide this build's API and an environment?
+		do
+			Result := api_ptr /= default_pointer and env_ptr /= default_pointer
+		end
 
 	is_provider_available (a_name: STRING): BOOLEAN
 			-- Is execution provider `a_name` available?
